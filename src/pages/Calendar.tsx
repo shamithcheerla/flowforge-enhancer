@@ -2,6 +2,7 @@ import { AppLayout } from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { CreateEventDialog } from "@/components/CreateEventDialog";
 
 const Calendar = () => {
   return (
@@ -12,10 +13,12 @@ const Calendar = () => {
             <h1 className="text-3xl font-bold text-foreground">Calendar</h1>
             <p className="text-muted-foreground">Schedule and manage your tasks and meetings</p>
           </div>
-          <Button className="bg-primary hover:bg-primary-hover">
-            <Plus className="mr-2 h-4 w-4" />
-            New Event
-          </Button>
+          <CreateEventDialog>
+            <Button className="bg-primary hover:bg-primary-hover">
+              <Plus className="mr-2 h-4 w-4" />
+              New Event
+            </Button>
+          </CreateEventDialog>
         </div>
 
         <Card className="bg-surface border-card-border shadow-card">

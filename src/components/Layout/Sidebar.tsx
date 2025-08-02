@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { CreateTaskDialog } from "@/components/CreateTaskDialog";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -63,10 +65,12 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="p-4 border-b border-border">
         <h3 className="text-sm font-medium text-muted-foreground mb-3">Quick Actions</h3>
         <div className="space-y-2">
-          <Button size="sm" className="w-full justify-start">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Task
-          </Button>
+          <CreateTaskDialog>
+            <Button size="sm" className="w-full justify-start">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Task
+            </Button>
+          </CreateTaskDialog>
           <Button size="sm" variant="outline" className="w-full justify-start">
             Search
           </Button>
@@ -106,10 +110,7 @@ export function Sidebar({ className }: SidebarProps) {
           </div>
         </div>
         <div className="mt-3 flex space-x-2">
-          <Button size="sm" variant="outline" className="flex-1">
-            <Palette className="mr-1 h-3 w-3" />
-            Theme
-          </Button>
+          <ThemeToggle />
           <Button size="sm" variant="outline">
             Logout
           </Button>

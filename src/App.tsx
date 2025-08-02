@@ -12,6 +12,13 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Team from "./pages/Team";
 import Calendar from "./pages/Calendar";
+import Notifications from "./pages/Notifications";
+import TimeTracking from "./pages/TimeTracking";
+import Reports from "./pages/Reports";
+import Goals from "./pages/Goals";
+import Templates from "./pages/Templates";
+import Automations from "./pages/Automations";
+import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +39,13 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/team" element={<Team />} />
           <Route path="/calendar" element={<Calendar />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/time-tracking" element={<TimeTracking />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/goals" element={<Goals />} />
+          <Route path="/templates" element={<Templates />} />
+          <Route path="/automations" element={<Automations />} />
+          <Route path="/help" element={<Help />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
