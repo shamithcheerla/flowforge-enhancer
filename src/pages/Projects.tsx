@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,11 +6,24 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Progress } from "@/components/ui/progress";
 import { StatsCard } from "@/components/ui/stats-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CreateProjectDialog } from "@/components/CreateProjectDialog";
+import { useAppStore } from "@/hooks/useAppStore";
 import { Plus, Search, Filter, Edit, ExternalLink, Users, Calendar, FolderKanban } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const Projects = () => {
-  const projects = [
+  const { projects, tasks } = useAppStore();
+  const [activeTab, setActiveTab] = useState("all");
+
+  const filteredProjects = projects.filter(project => {
+    if (activeTab === "all") return true;
+    if (activeTab === "active") return project.status === "active";
+    if (activeTab === "completed") return project.status === "completed";
+    if (activeTab === "shared") return project.team.length > 1;
+    return true;
+  });
+
+  const projectStats = [
     {
       id: 1,
       title: "Website Redesign",
@@ -54,27 +68,29 @@ const Projects = () => {
             <h1 className="text-3xl font-bold text-foreground">Projects</h1>
             <p className="text-muted-foreground">Organize and track your project progress</p>
           </div>
-          <Button className="bg-primary hover:bg-primary-hover shadow-primary">
-            <Plus className="mr-2 h-4 w-4" />
-            New Project
-          </Button>
+          <CreateProjectDialog>
+            <Button className="bg-primary hover:bg-primary-hover shadow-primary">
+              <Plus className="mr-2 h-4 w-4" />
+              New Project
+            </Button>
+          </CreateProjectDialog>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatsCard
             title="Active Projects"
-            value={12}
+            value={projects.filter(p => p.status === 'active').length}
             icon={<FolderKanban className="h-4 w-4" />}
           />
           <StatsCard
             title="Average Completion"
-            value="87%"
+            value={`${Math.round(projects.reduce((acc, p) => acc + p.progress, 0) / projects.length) || 0}%`}
             icon={<Calendar className="h-4 w-4" />}
           />
           <StatsCard
-            title="Team Members"
-            value={24}
+            title="Total Projects"
+            value={projects.length}
             icon={<Users className="h-4 w-4" />}
           />
         </div>
@@ -106,7 +122,7 @@ const Projects = () => {
 
           <TabsContent value="all" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -171,7 +187,7 @@ const Projects = () => {
                     {/* Due Date */}
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-muted-foreground">Due {project.dueDate}</span>
-                      <span className="text-foreground">{project.daysLeft} days</span>
+                      <span className="text-foreground">{Math.ceil((new Date(project.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days</span>
                     </div>
                     
                     <div className="flex space-x-2 pt-2">

@@ -13,20 +13,18 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore } from "@/hooks/useAppStore";
 
-interface CreateTaskDialogProps {
+interface CreateProjectDialogProps {
   children?: React.ReactNode;
-  onTaskCreated?: (task: any) => void;
 }
 
-export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogProps) {
+export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
-  const [assignee, setAssignee] = useState("");
   const [dueDate, setDueDate] = useState<Date>();
   const { toast } = useToast();
-  const { addTask } = useAppStore();
+  const { addProject } = useAppStore();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,34 +32,30 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
     if (!title.trim()) {
       toast({
         title: "Error",
-        description: "Task title is required",
+        description: "Project title is required",
         variant: "destructive"
       });
       return;
     }
 
-    const newTask = {
+    addProject({
       title: title.trim(),
       description: description.trim(),
-      priority: (priority || "medium") as "low" | "medium" | "high" | "urgent",
-      assignee: assignee || "Unassigned",
-      dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
-      status: "todo" as const
-    };
-
-    addTask(newTask);
-    onTaskCreated?.(newTask);
+      priority: (priority || "medium") as "low" | "medium" | "high",
+      progress: 0,
+      team: ["Alex Johnson"],
+      dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+      status: "planning"
+    });
     
     toast({
       title: "Success",
-      description: "Task created successfully!"
+      description: "Project created successfully!"
     });
 
-    // Reset form
     setTitle("");
     setDescription("");
     setPriority("");
-    setAssignee("");
     setDueDate(undefined);
     setOpen(false);
   };
@@ -72,22 +66,22 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
         {children || (
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Create Task
+            New Project
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle>Create New Project</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Task Title</Label>
+            <Label htmlFor="title">Project Title</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter task title..."
+              placeholder="Enter project title..."
               required
             />
           </div>
@@ -98,41 +92,23 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter task description..."
+              placeholder="Enter project description..."
               rows={3}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Assignee</Label>
-              <Select value={assignee} onValueChange={setAssignee}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select assignee" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="alex-johnson">Alex Johnson</SelectItem>
-                  <SelectItem value="sarah-williams">Sarah Williams</SelectItem>
-                  <SelectItem value="mike-chen">Mike Chen</SelectItem>
-                  <SelectItem value="emma-davis">Emma Davis</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label>Priority</Label>
+            <Select value={priority} onValueChange={setPriority}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -165,7 +141,7 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit">Create Task</Button>
+            <Button type="submit">Create Project</Button>
           </div>
         </form>
       </DialogContent>

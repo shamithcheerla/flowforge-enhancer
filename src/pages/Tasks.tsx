@@ -1,81 +1,48 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { CreateTaskDialog } from "@/components/CreateTaskDialog";
+import { useAppStore } from "@/hooks/useAppStore";
 import { Plus, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const Tasks = () => {
+  const { tasks, updateTask } = useAppStore();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredTasks = tasks.filter(task => 
+    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    task.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const columns = [
     {
       id: "todo",
-      title: "To Do",
-      count: 2,
-      tasks: [
-        {
-          id: 1,
-          title: "Design new landing page",
-          description: "Create a modern landing page for the new product launch",
-          priority: "high" as const,
-          assignee: "Alex",
-          date: "29/06/2024",
-        },
-        {
-          id: 2,
-          title: "Research competitor analysis",
-          description: "Research competitor features and pricing strategies",
-          priority: "medium" as const,
-          assignee: "Sarah",
-          date: "20/06/2024",
-        },
-      ],
+      title: "To Do", 
+      tasks: filteredTasks.filter(task => task.status === "todo")
     },
     {
-      id: "progress",
+      id: "in-progress",
       title: "In Progress",
-      count: 1,
-      tasks: [
-        {
-          id: 3,
-          title: "Implement user authentication",
-          description: "Set up secure login and registration system",
-          priority: "high" as const,
-          assignee: "Mike",
-          date: "27/06/2024",
-        },
-      ],
+      tasks: filteredTasks.filter(task => task.status === "in-progress")
     },
     {
       id: "review",
       title: "Under Review",
-      count: 1,
-      tasks: [
-        {
-          id: 4,
-          title: "Update API documentation",
-          description: "Review and update all API endpoint documentation",
-          priority: "low" as const,
-          assignee: "Emma",
-          date: "25/06/2024",
-        },
-      ],
+      tasks: filteredTasks.filter(task => task.status === "review")
     },
     {
       id: "completed",
       title: "Completed",
-      count: 1,
-      tasks: [
-        {
-          id: 5,
-          title: "Set up CI/CD pipeline",
-          description: "Configure automated testing and deployment",
-          priority: "medium" as const,
-          assignee: "John",
-          date: "24/06/2024",
-        },
-      ],
-    },
+      tasks: filteredTasks.filter(task => task.status === "completed")
+    }
   ];
+
+  const handleTaskStatusChange = (taskId: number, newStatus: "todo" | "in-progress" | "review" | "completed") => {
+    updateTask(taskId, { status: newStatus });
+  };
 
   return (
     <AppLayout>
@@ -86,10 +53,12 @@ const Tasks = () => {
             <h1 className="text-3xl font-bold text-foreground">Task Board</h1>
             <p className="text-muted-foreground">Manage your tasks with drag & drop functionality</p>
           </div>
-          <Button className="bg-primary hover:bg-primary-hover shadow-primary">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Task
-          </Button>
+          <CreateTaskDialog>
+            <Button className="bg-primary hover:bg-primary-hover shadow-primary">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Task
+            </Button>
+          </CreateTaskDialog>
         </div>
 
         {/* Search and Filter */}
@@ -99,6 +68,8 @@ const Tasks = () => {
             <Input
               placeholder="Search tasks..."
               className="pl-10 bg-input border-border"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <Button variant="outline" size="sm">
@@ -116,7 +87,7 @@ const Tasks = () => {
                 <h3 className="font-semibold text-foreground flex items-center space-x-2">
                   <span>{column.title}</span>
                   <span className="bg-muted text-muted-foreground px-2 py-1 rounded-full text-xs">
-                    {column.count}
+                    {column.tasks.length}
                   </span>
                 </h3>
               </div>
@@ -138,7 +109,7 @@ const Tasks = () => {
                           {task.description}
                         </p>
                         
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
                           <div className="flex items-center space-x-2">
                             <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                               <span className="text-primary-foreground font-medium text-xs">
@@ -147,7 +118,20 @@ const Tasks = () => {
                             </div>
                             <span>{task.assignee}</span>
                           </div>
-                          <span>{task.date}</span>
+                          <span>{task.dueDate}</span>
+                        </div>
+                        <div className="flex space-x-1">
+                          {["todo", "in-progress", "review", "completed"].map((status) => (
+                            <Button
+                              key={status}
+                              size="sm"
+                              variant={task.status === status ? "default" : "outline"}
+                              onClick={() => handleTaskStatusChange(task.id, status as any)}
+                              className="text-xs h-6 px-2"
+                            >
+                              {status === "in-progress" ? "Progress" : status.charAt(0).toUpperCase() + status.slice(1)}
+                            </Button>
+                          ))}
                         </div>
                       </div>
                     </CardContent>
@@ -156,13 +140,15 @@ const Tasks = () => {
               </div>
 
               {/* Add Task Button */}
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-muted-foreground border-2 border-dashed border-muted"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add a task
-              </Button>
+              <CreateTaskDialog>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start text-muted-foreground border-2 border-dashed border-muted"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add a task
+                </Button>
+              </CreateTaskDialog>
             </div>
           ))}
         </div>
