@@ -1,13 +1,18 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatsCard } from "@/components/ui/stats-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Progress } from "@/components/ui/progress";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useToast } from "@/hooks/use-toast";
+import { useAppStore } from "@/hooks/useAppStore";
 import { 
   BarChart3, 
   Download, 
-  Calendar,
+  Calendar as CalendarIcon,
   CheckSquare,
   Clock,
   TrendingUp,
@@ -16,8 +21,20 @@ import {
   AlertTriangle,
   Trophy
 } from "lucide-react";
+import { format } from "date-fns";
 
 const Analytics = () => {
+  const { tasks, projects } = useAppStore();
+  const { toast } = useToast();
+  const [dateRange, setDateRange] = useState<Date>();
+
+  const handleExportReport = () => {
+    toast({
+      title: "Export Started",
+      description: "Your report is being generated and will be downloaded shortly."
+    });
+  };
+
   const teamPerformance = [
     { name: "Alex Johnson", performance: 95 },
     { name: "Sarah Wilson", performance: 89 },
@@ -58,11 +75,23 @@ const Analytics = () => {
             <p className="text-muted-foreground">Track your productivity and team performance</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Calendar className="mr-2 h-4 w-4" />
-              Data Range
-            </Button>
-            <Button size="sm" className="bg-primary hover:bg-primary-hover">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange ? format(dateRange, "MMM dd, yyyy") : "Date Range"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            <Button size="sm" className="bg-primary hover:bg-primary-hover" onClick={handleExportReport}>
               <Download className="mr-2 h-4 w-4" />
               Export Report
             </Button>

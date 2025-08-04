@@ -1,9 +1,44 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, Filter, TrendingUp } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Reports = () => {
+  const { toast } = useToast();
+  const [generatingReport, setGeneratingReport] = useState<string | null>(null);
+
+  const handleGenerateReport = async (reportType: string) => {
+    setGeneratingReport(reportType);
+    toast({
+      title: "Generating Report",
+      description: `Creating ${reportType} report...`
+    });
+    
+    setTimeout(() => {
+      setGeneratingReport(null);
+      toast({
+        title: "Report Generated",
+        description: `${reportType} report has been generated successfully!`
+      });
+    }, 2000);
+  };
+
+  const handleFilter = () => {
+    toast({
+      title: "Filter Applied",
+      description: "Report filters have been updated"
+    });
+  };
+
+  const handleExport = () => {
+    toast({
+      title: "Export Started",
+      description: "Your reports are being exported..."
+    });
+  };
+
   return (
     <AppLayout>
       <div className="p-6 space-y-6">
@@ -13,11 +48,11 @@ const Reports = () => {
             <p className="text-muted-foreground">Generate comprehensive project reports</p>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleFilter}>
               <Filter className="mr-2 h-4 w-4" />
               Filter
             </Button>
-            <Button>
+            <Button onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
@@ -34,7 +69,13 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">Weekly productivity analysis with time tracking data</p>
-              <Button className="w-full">Generate Report</Button>
+              <Button 
+                className="w-full" 
+                onClick={() => handleGenerateReport("Productivity Report")}
+                disabled={generatingReport === "Productivity Report"}
+              >
+                {generatingReport === "Productivity Report" ? "Generating..." : "Generate Report"}
+              </Button>
             </CardContent>
           </Card>
 
@@ -47,7 +88,13 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">Detailed project progress and milestone reports</p>
-              <Button className="w-full">Generate Report</Button>
+              <Button 
+                className="w-full" 
+                onClick={() => handleGenerateReport("Project Summary")}
+                disabled={generatingReport === "Project Summary"}
+              >
+                {generatingReport === "Project Summary" ? "Generating..." : "Generate Report"}
+              </Button>
             </CardContent>
           </Card>
 
@@ -60,7 +107,13 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">Team member performance and task completion rates</p>
-              <Button className="w-full">Generate Report</Button>
+              <Button 
+                className="w-full" 
+                onClick={() => handleGenerateReport("Team Performance")}
+                disabled={generatingReport === "Team Performance"}
+              >
+                {generatingReport === "Team Performance" ? "Generating..." : "Generate Report"}
+              </Button>
             </CardContent>
           </Card>
         </div>

@@ -9,6 +9,7 @@ import Tasks from "./pages/Tasks";
 import Projects from "./pages/Projects";
 import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
+import ProfilePage from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Team from "./pages/Team";
 import Calendar from "./pages/Calendar";
@@ -35,7 +36,7 @@ const App = () => (
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/analytics" element={<Analytics />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/team" element={<Team />} />
           <Route path="/calendar" element={<Calendar />} />

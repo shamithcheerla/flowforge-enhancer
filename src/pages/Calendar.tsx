@@ -1,10 +1,26 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
+import { useAppStore } from "@/hooks/useAppStore";
+import { format } from "date-fns";
 
 const Calendar = () => {
+  const { events } = useAppStore();
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const monthName = format(currentDate, "MMMM yyyy");
+
+  const previousMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+  };
+
   return (
     <AppLayout>
       <div className="p-6 space-y-6">
@@ -26,21 +42,58 @@ const Calendar = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
                 <CalendarIcon className="h-5 w-5" />
-                <span>January 2024</span>
+                <span>{monthName}</span>
               </CardTitle>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={previousMonth}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={nextMonth}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="h-96 flex items-center justify-center bg-muted rounded-lg">
-              <p className="text-muted-foreground">Calendar view will be implemented here</p>
+            <div className="space-y-4">
+              {events.length === 0 ? (
+                <div className="h-96 flex items-center justify-center bg-muted rounded-lg">
+                  <p className="text-muted-foreground">No events scheduled</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {events.map((event) => (
+                    <Card key={event.id} className="bg-surface border-card-border">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <h3 className="font-medium text-foreground">{event.title}</h3>
+                            <p className="text-sm text-muted-foreground">{event.description}</p>
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                              <div className="flex items-center space-x-1">
+                                <CalendarIcon className="h-3 w-3" />
+                                <span>{format(event.date, "MMM dd, yyyy")}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Clock className="h-3 w-3" />
+                                <span>{event.time}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className={`px-2 py-1 rounded-full text-xs ${
+                            event.type === 'meeting' ? 'bg-primary/10 text-primary' :
+                            event.type === 'deadline' ? 'bg-destructive/10 text-destructive' :
+                            event.type === 'reminder' ? 'bg-warning/10 text-warning' :
+                            'bg-muted text-muted-foreground'
+                          }`}>
+                            {event.type}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

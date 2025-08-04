@@ -14,8 +14,14 @@ import { Input } from "@/components/ui/input";
 const Projects = () => {
   const { projects, tasks } = useAppStore();
   const [activeTab, setActiveTab] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (!matchesSearch) return false;
+    
     if (activeTab === "all") return true;
     if (activeTab === "active") return project.status === "active";
     if (activeTab === "completed") return project.status === "completed";
@@ -111,6 +117,8 @@ const Projects = () => {
                 <Input
                   placeholder="Search projects..."
                   className="pl-10 bg-input border-border w-64"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <Button variant="outline" size="sm">
@@ -205,20 +213,83 @@ const Projects = () => {
           </TabsContent>
 
           <TabsContent value="active">
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Active projects will be shown here</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => (
+                <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg text-foreground">{project.title}</CardTitle>
+                        <StatusBadge status={project.priority} />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground text-sm line-clamp-2">{project.description}</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-foreground font-medium">Progress</span>
+                        <span className="text-foreground">{project.progress}%</span>
+                      </div>
+                      <Progress value={project.progress} className="h-2" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </TabsContent>
 
           <TabsContent value="completed">
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Completed projects will be shown here</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => (
+                <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg text-foreground">{project.title}</CardTitle>
+                        <StatusBadge status={project.priority} />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground text-sm line-clamp-2">{project.description}</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-foreground font-medium">Progress</span>
+                        <span className="text-foreground">{project.progress}%</span>
+                      </div>
+                      <Progress value={project.progress} className="h-2" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </TabsContent>
 
           <TabsContent value="shared">
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Shared projects will be shown here</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredProjects.map((project) => (
+                <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg text-foreground">{project.title}</CardTitle>
+                        <StatusBadge status={project.priority} />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground text-sm line-clamp-2">{project.description}</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-foreground font-medium">Progress</span>
+                        <span className="text-foreground">{project.progress}%</span>
+                      </div>
+                      <Progress value={project.progress} className="h-2" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </TabsContent>
         </Tabs>

@@ -84,7 +84,28 @@ const Help = () => {
               <MessageCircle className="h-8 w-8 text-primary mx-auto mb-3" />
               <h3 className="font-semibold mb-2">Live Chat</h3>
               <p className="text-sm text-muted-foreground mb-4">Get instant help from our team</p>
-              <Button className="w-full">Start Chat</Button>
+              <div className="space-y-3">
+                {chatMessages.length > 0 && (
+                  <div className="max-h-32 overflow-y-auto space-y-1 p-2 bg-muted rounded">
+                    {chatMessages.map((msg, idx) => (
+                      <p key={idx} className="text-sm">{msg}</p>
+                    ))}
+                  </div>
+                )}
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Type your message..."
+                    value={currentMessage}
+                    onChange={(e) => setCurrentMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  />
+                  <Button size="sm" onClick={handleSendMessage}>Send</Button>
+                </div>
+                <Button className="w-full" onClick={handleStartChat}>
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Start Live Chat
+                </Button>
+              </div>
             </CardContent>
           </Card>
 

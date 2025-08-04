@@ -6,7 +6,8 @@ import { Zap, Plus, Settings, Play, Pause } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 const Automations = () => {
-  const automations = [
+  const { toast } = useToast();
+  const [automations, setAutomations] = useState([
     {
       id: 1,
       name: "Auto-assign new tasks",
@@ -43,7 +44,32 @@ const Automations = () => {
       triggers: 12,
       lastRun: "3 days ago"
     }
-  ];
+  ]);
+
+  const handleNewAutomation = () => {
+    toast({
+      title: "New Automation",
+      description: "Automation creation wizard would open here"
+    });
+  };
+
+  const handleConfigure = (automationName: string) => {
+    toast({
+      title: "Configure Automation",
+      description: `Configuring ${automationName}...`
+    });
+  };
+
+  const toggleAutomation = (id: number) => {
+    setAutomations(prev => prev.map(auto => 
+      auto.id === id ? { ...auto, active: !auto.active } : auto
+    ));
+    const automation = automations.find(a => a.id === id);
+    toast({
+      title: automation?.active ? "Automation Disabled" : "Automation Enabled",
+      description: `${automation?.name} has been ${automation?.active ? 'disabled' : 'enabled'}`
+    });
+  };
 
   return (
     <AppLayout>
@@ -53,7 +79,7 @@ const Automations = () => {
             <h1 className="text-3xl font-bold text-foreground">Automations</h1>
             <p className="text-muted-foreground">Streamline your workflow with intelligent automation</p>
           </div>
-          <Button className="bg-primary hover:bg-primary-hover">
+          <Button className="bg-primary hover:bg-primary-hover" onClick={handleNewAutomation}>
             <Plus className="mr-2 h-4 w-4" />
             New Automation
           </Button>

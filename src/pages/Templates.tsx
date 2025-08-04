@@ -1,10 +1,29 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Archive, Plus, Search, Filter, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const Templates = () => {
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleUseTemplate = (templateName: string) => {
+    toast({
+      title: "Template Applied",
+      description: `${templateName} template has been applied to your project!`
+    });
+  };
+
+  const handleCreateTemplate = () => {
+    toast({
+      title: "Create Template",
+      description: "Template creation dialog would open here"
+    });
+  };
+
   const templates = [
     {
       id: 1,
@@ -48,7 +67,7 @@ const Templates = () => {
             <h1 className="text-3xl font-bold text-foreground">Templates</h1>
             <p className="text-muted-foreground">Reusable project templates to accelerate your workflow</p>
           </div>
-          <Button className="bg-primary hover:bg-primary-hover">
+          <Button className="bg-primary hover:bg-primary-hover" onClick={handleCreateTemplate}>
             <Plus className="mr-2 h-4 w-4" />
             Create Template
           </Button>
@@ -60,6 +79,8 @@ const Templates = () => {
             <Input
               placeholder="Search templates..."
               className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <Button variant="outline">
@@ -95,7 +116,7 @@ const Templates = () => {
                     <span className="font-medium">{template.usage} times</span>
                   </div>
                   <div className="flex space-x-2 pt-2">
-                    <Button className="flex-1">
+                    <Button className="flex-1" onClick={() => handleUseTemplate(template.name)}>
                       <Copy className="mr-2 h-4 w-4" />
                       Use Template
                     </Button>

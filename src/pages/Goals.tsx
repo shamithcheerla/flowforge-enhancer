@@ -6,7 +6,9 @@ import { Target, Plus, Calendar, TrendingUp } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 const Goals = () => {
-  const goals = [
+  const { goals } = useAppStore();
+
+  const sampleGoals = [
     {
       id: 1,
       title: "Complete Q1 Project Milestones",
@@ -44,10 +46,12 @@ const Goals = () => {
             <h1 className="text-3xl font-bold text-foreground">Goals</h1>
             <p className="text-muted-foreground">Track your objectives and key results</p>
           </div>
-          <Button className="bg-primary hover:bg-primary-hover">
-            <Plus className="mr-2 h-4 w-4" />
-            New Goal
-          </Button>
+          <CreateGoalDialog>
+            <Button className="bg-primary hover:bg-primary-hover">
+              <Plus className="mr-2 h-4 w-4" />
+              New Goal
+            </Button>
+          </CreateGoalDialog>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
