@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Target, Plus, Calendar, TrendingUp } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { useAppStore } from "@/hooks/useAppStore";
+import { CreateGoalDialog } from "@/components/CreateGoalDialog";
 
 const Goals = () => {
   const { goals } = useAppStore();
@@ -106,12 +108,12 @@ const Goals = () => {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium">Progress</span>
-                      <span className="text-sm text-muted-foreground">{goal.progress}%</span>
+                      <span className="text-sm text-muted-foreground">{Math.round((goal.current / goal.target) * 100)}%</span>
                     </div>
-                    <Progress value={goal.progress} className="h-2" />
+                    <Progress value={Math.round((goal.current / goal.target) * 100)} className="h-2" />
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Category: {goal.category}</span>
+                    <span className="text-muted-foreground">Target: {goal.current}/{goal.target}</span>
                     <span className="text-muted-foreground">Due: {goal.deadline}</span>
                   </div>
                 </div>

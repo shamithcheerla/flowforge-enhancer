@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Zap, Plus, Settings, Play, Pause } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Automations = () => {
   const { toast } = useToast();
@@ -62,12 +64,12 @@ const Automations = () => {
 
   const toggleAutomation = (id: number) => {
     setAutomations(prev => prev.map(auto => 
-      auto.id === id ? { ...auto, active: !auto.active } : auto
+      auto.id === id ? { ...auto, enabled: !auto.enabled } : auto
     ));
     const automation = automations.find(a => a.id === id);
     toast({
-      title: automation?.active ? "Automation Disabled" : "Automation Enabled",
-      description: `${automation?.name} has been ${automation?.active ? 'disabled' : 'enabled'}`
+      title: automation?.enabled ? "Automation Disabled" : "Automation Enabled",
+      description: `${automation?.name} has been ${automation?.enabled ? 'disabled' : 'enabled'}`
     });
   };
 

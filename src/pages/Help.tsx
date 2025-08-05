@@ -3,8 +3,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { HelpCircle, Search, BookOpen, MessageCircle, Mail, Video } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Help = () => {
+  const { toast } = useToast();
+  const [chatMessages, setChatMessages] = useState<string[]>([]);
+  const [currentMessage, setCurrentMessage] = useState("");
+
+  const handleSendMessage = () => {
+    if (currentMessage.trim()) {
+      setChatMessages(prev => [...prev, `You: ${currentMessage}`, "Support: Thank you for your message. We'll get back to you soon!"]);
+      setCurrentMessage("");
+    }
+  };
+
+  const handleStartChat = () => {
+    toast({
+      title: "Live Chat Started",
+      description: "Connecting you with our support team..."
+    });
+  };
+
   const helpTopics = [
     {
       id: 1,
