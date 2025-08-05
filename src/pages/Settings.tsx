@@ -7,22 +7,50 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ThemeSelector } from "@/components/ThemeSelector";
-import { Settings as SettingsIcon, Bell, Shield, Palette, Users, Database, Globe, Lock, Smartphone } from "lucide-react";
+import { Settings as SettingsIcon, Bell, Shield, Palette, Users, Database, Globe, Lock, Smartphone, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAppStore } from "@/hooks/useAppStore";
 
 const Settings = () => {
   const { toast } = useToast();
+  const { user } = useAppStore();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
+  const [mobileNotifications, setMobileNotifications] = useState(true);
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+  const [compactView, setCompactView] = useState(false);
   const [language, setLanguage] = useState("en");
   const [timezone, setTimezone] = useState("UTC");
+  const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
+  const [currency, setCurrency] = useState("USD");
 
   const handleSettingChange = (setting: string, value: boolean | string) => {
     toast({
       title: "Setting Updated",
       description: `${setting} has been updated successfully`
+    });
+  };
+
+  const handlePasswordChange = () => {
+    toast({
+      title: "Password Update",
+      description: "Password change form would open in a real app"
+    });
+  };
+
+  const handleClearCache = () => {
+    toast({
+      title: "Cache Cleared",
+      description: "Application cache has been cleared successfully"
+    });
+  };
+
+  const handleExportData = () => {
+    toast({
+      title: "Data Export",
+      description: "Your data export will be ready shortly"
     });
   };
 
@@ -67,7 +95,14 @@ const Settings = () => {
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="mobile-notif">Mobile app notifications</Label>
-                <Switch id="mobile-notif" />
+                <Switch 
+                  id="mobile-notif" 
+                  checked={mobileNotifications}
+                  onCheckedChange={(value) => {
+                    setMobileNotifications(value);
+                    handleSettingChange("Mobile notifications", value);
+                  }}
+                />
               </div>
             </CardContent>
           </Card>
@@ -95,7 +130,7 @@ const Settings = () => {
               </div>
               <div className="space-y-2">
                 <Label>Change Password</Label>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={handlePasswordChange}>
                   <Lock className="mr-2 h-4 w-4" />
                   Update Password
                 </Button>
@@ -113,7 +148,10 @@ const Settings = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
+                <Select value={language} onValueChange={(value) => {
+                  setLanguage(value);
+                  handleSettingChange("Language", value);
+                }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -122,12 +160,17 @@ const Settings = () => {
                     <SelectItem value="es">Español</SelectItem>
                     <SelectItem value="fr">Français</SelectItem>
                     <SelectItem value="de">Deutsch</SelectItem>
+                    <SelectItem value="zh">中文</SelectItem>
+                    <SelectItem value="ja">日本語</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Timezone</Label>
-                <Select value={timezone} onValueChange={setTimezone}>
+                <Select value={timezone} onValueChange={(value) => {
+                  setTimezone(value);
+                  handleSettingChange("Timezone", value);
+                }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -136,6 +179,24 @@ const Settings = () => {
                     <SelectItem value="EST">Eastern Time</SelectItem>
                     <SelectItem value="PST">Pacific Time</SelectItem>
                     <SelectItem value="GMT">GMT</SelectItem>
+                    <SelectItem value="CST">Central Time</SelectItem>
+                    <SelectItem value="JST">Japan Time</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Date Format</Label>
+                <Select value={dateFormat} onValueChange={(value) => {
+                  setDateFormat(value);
+                  handleSettingChange("Date format", value);
+                }}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
+                    <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
+                    <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -144,7 +205,21 @@ const Settings = () => {
                 <Switch 
                   id="auto-save" 
                   checked={autoSave}
-                  onCheckedChange={setAutoSave}
+                  onCheckedChange={(value) => {
+                    setAutoSave(value);
+                    handleSettingChange("Auto-save", value);
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="compact-view">Compact view</Label>
+                <Switch 
+                  id="compact-view" 
+                  checked={compactView}
+                  onCheckedChange={(value) => {
+                    setCompactView(value);
+                    handleSettingChange("Compact view", value);
+                  }}
                 />
               </div>
             </CardContent>
@@ -165,11 +240,87 @@ const Settings = () => {
                   <span>Available: 7.6 GB</span>
                 </div>
               </div>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={handleClearCache}>
+                <Trash2 className="mr-2 h-4 w-4" />
                 Clear Cache
               </Button>
-              <Button variant="destructive" className="w-full">
+              <Button variant="outline" className="w-full" onClick={handleExportData}>
+                <Download className="mr-2 h-4 w-4" />
                 Export All Data
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-surface border-card-border shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="h-5 w-5" />
+                <span>Account & Privacy</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Account Type</Label>
+                <p className="text-sm text-muted-foreground">Premium Account</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Data Retention</Label>
+                <Select defaultValue="1year">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30days">30 Days</SelectItem>
+                    <SelectItem value="90days">90 Days</SelectItem>
+                    <SelectItem value="1year">1 Year</SelectItem>
+                    <SelectItem value="forever">Forever</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="profile-public">Public profile</Label>
+                <Switch id="profile-public" />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="activity-tracking">Activity tracking</Label>
+                <Switch id="activity-tracking" defaultChecked />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-surface border-card-border shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Globe className="h-5 w-5" />
+                <span>Advanced Settings</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Currency</Label>
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD ($)</SelectItem>
+                    <SelectItem value="EUR">EUR (€)</SelectItem>
+                    <SelectItem value="GBP">GBP (£)</SelectItem>
+                    <SelectItem value="JPY">JPY (¥)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="analytics">Send analytics</Label>
+                <Switch id="analytics" defaultChecked />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="beta-features">Beta features</Label>
+                <Switch id="beta-features" />
+              </div>
+              <Button variant="destructive" className="w-full">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Account
               </Button>
             </CardContent>
           </Card>

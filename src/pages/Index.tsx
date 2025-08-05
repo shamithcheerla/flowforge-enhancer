@@ -6,15 +6,50 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Timer, Sparkles } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAppStore } from "@/hooks/useAppStore";
 
 const Index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { setUser } = useAppStore();
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
-    // Demo login - any credentials work
+    if (!email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    navigate("/dashboard");
+  };
+
+  const handleSignUp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email || !password || !confirmPassword) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+    setUser({ name, email, role: "Team Member" });
     navigate("/dashboard");
   };
 
@@ -64,6 +99,7 @@ const Index = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="bg-input border-border"
+                        required
                       />
                     </div>
                     <div className="space-y-2">
@@ -87,14 +123,29 @@ const Index = () => {
                 </TabsContent>
                 
                 <TabsContent value="signup">
-                  <form onSubmit={handleSignIn} className="space-y-4">
+                  <form onSubmit={handleSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Full Name</Label>
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="Your full name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="bg-input border-border"
+                        required
+                      />
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email</Label>
                       <Input
                         id="signup-email"
                         type="email"
                         placeholder="your@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="bg-input border-border"
+                        required
                       />
                     </div>
                     <div className="space-y-2">
@@ -103,7 +154,10 @@ const Index = () => {
                         id="signup-password"
                         type="password"
                         placeholder="Create a password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         className="bg-input border-border"
+                        required
                       />
                     </div>
                     <div className="space-y-2">
@@ -112,7 +166,10 @@ const Index = () => {
                         id="confirm-password"
                         type="password"
                         placeholder="Confirm your password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                         className="bg-input border-border"
+                        required
                       />
                     </div>
                     <Button type="submit" className="w-full bg-primary hover:bg-primary-hover shadow-primary">

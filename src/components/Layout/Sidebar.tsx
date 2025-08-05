@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAppStore } from "@/hooks/useAppStore";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -36,6 +37,7 @@ const navigation = [
   { name: "Automations", href: "/automations", icon: Zap },
   { name: "Notifications", href: "/notifications", icon: Bell },
   { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Profile", href: "/profile", icon: Palette },
   { name: "Help", href: "/help", icon: HelpCircle },
 ];
 
@@ -45,6 +47,7 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
+  const { user } = useAppStore();
 
   return (
     <div className={cn("flex h-full w-64 flex-col bg-surface border-r border-border", className)}>
@@ -102,11 +105,13 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="p-4 border-t border-border">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-            <span className="text-primary-foreground font-medium text-sm">AJ</span>
+            <span className="text-primary-foreground font-medium text-sm">
+              {user.name.split(' ').map(n => n[0]).join('')}
+            </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">Alex Johnson</p>
-            <p className="text-xs text-muted-foreground truncate">Product Manager</p>
+            <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
+            <p className="text-xs text-muted-foreground truncate">{user.role}</p>
           </div>
         </div>
         <div className="mt-3 flex space-x-2">

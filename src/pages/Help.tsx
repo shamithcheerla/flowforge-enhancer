@@ -89,21 +89,12 @@ const Help = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="bg-surface border-card-border shadow-card">
             <CardContent className="p-6 text-center">
-              <Video className="h-8 w-8 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Video Tutorials</h3>
-              <p className="text-sm text-muted-foreground mb-4">Watch step-by-step guides</p>
-              <Button variant="outline" className="w-full">View Tutorials</Button>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-surface border-card-border shadow-card">
-            <CardContent className="p-6 text-center">
-              <MessageCircle className="h-8 w-8 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Live Chat</h3>
-              <p className="text-sm text-muted-foreground mb-4">Get instant help from our team</p>
+              <Mail className="h-8 w-8 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold mb-2">Email Support</h3>
+              <p className="text-sm text-muted-foreground mb-4">Send us your questions and get detailed responses</p>
               <div className="space-y-3">
                 {chatMessages.length > 0 && (
                   <div className="max-h-32 overflow-y-auto space-y-1 p-2 bg-muted rounded">
@@ -121,9 +112,14 @@ const Help = () => {
                   />
                   <Button size="sm" onClick={handleSendMessage}>Send</Button>
                 </div>
-                <Button className="w-full" onClick={handleStartChat}>
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Start Live Chat
+                <Button variant="outline" className="w-full" onClick={() => {
+                  toast({
+                    title: "Email Support",
+                    description: "Redirecting to email support..."
+                  });
+                }}>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Contact Us
                 </Button>
               </div>
             </CardContent>
@@ -131,10 +127,23 @@ const Help = () => {
 
           <Card className="bg-surface border-card-border shadow-card">
             <CardContent className="p-6 text-center">
-              <Mail className="h-8 w-8 text-primary mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Email Support</h3>
-              <p className="text-sm text-muted-foreground mb-4">Send us your questions</p>
-              <Button variant="outline" className="w-full">Contact Us</Button>
+              <HelpCircle className="h-8 w-8 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold mb-2">FAQ & Documentation</h3>
+              <p className="text-sm text-muted-foreground mb-4">Browse our comprehensive knowledge base</p>
+              <div className="space-y-3">
+                <Button variant="outline" className="w-full">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  View Documentation
+                </Button>
+                <Button variant="outline" className="w-full">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Browse FAQ
+                </Button>
+                <Button className="w-full" onClick={handleStartChat}>
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Start Live Chat
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -2,38 +2,65 @@ import { AppLayout } from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Settings, Check, X, Clock, Mail, MessageSquare } from "lucide-react";
+import { Bell, Settings, Check, X, Clock, Mail, MessageSquare, CheckSquare, FolderKanban, Calendar } from "lucide-react";
+import { useAppStore } from "@/hooks/useAppStore";
+import { useToast } from "@/hooks/use-toast";
 
 const Notifications = () => {
-  const notifications = [
-    {
-      id: 1,
-      type: "task",
-      title: "New task assigned",
-      message: "You have been assigned to 'Design Review' by Sarah Johnson",
-      time: "2 min ago",
-      unread: true,
-      icon: MessageSquare
-    },
-    {
-      id: 2,
+  const { notifications, tasks, projects } = useAppStore();
+  const { toast } = useToast();
+
+  // Check for deadline notifications
+  const deadlineNotifications = [
+    ...tasks.filter(task => {
+      const dueDate = new Date(task.dueDate);
+      const today = new Date();
+      const diffTime = dueDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 2 && diffDays >= 0;
+    }).map(task => ({
+      id: `task-${task.id}`,
       type: "deadline",
       title: "Deadline approaching",
-      message: "Project 'Mobile App' is due in 2 days",
-      time: "1 hour ago",
+      message: `Task "${task.title}" is due in ${Math.ceil((new Date(task.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days`,
+      time: "System alert",
       unread: true,
       icon: Clock
-    },
-    {
-      id: 3,
-      type: "comment",
-      title: "New comment",
-      message: "Alex commented on 'Homepage Redesign'",
-      time: "3 hours ago",
-      unread: false,
-      icon: MessageSquare
-    }
+    })),
+    ...projects.filter(project => {
+      const dueDate = new Date(project.endDate);
+      const today = new Date();
+      const diffTime = dueDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 2 && diffDays >= 0;
+    }).map(project => ({
+      id: `project-${project.id}`,
+      type: "deadline",
+      title: "Project deadline approaching",
+      message: `Project "${project.name}" is due in ${Math.ceil((new Date(project.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days`,
+      time: "System alert",
+      unread: true,
+      icon: Clock
+    }))
   ];
+
+  const allNotifications = [...notifications, ...deadlineNotifications];
+
+  const getIcon = (iconName: string) => {
+    switch(iconName) {
+      case 'CheckSquare': return CheckSquare;
+      case 'FolderKanban': return FolderKanban;
+      case 'Calendar': return Calendar;
+      default: return MessageSquare;
+    }
+  };
+
+  const markAllRead = () => {
+    toast({
+      title: "Notifications marked as read",
+      description: "All notifications have been marked as read"
+    });
+  };
 
   return (
     <AppLayout>
@@ -48,7 +75,7 @@ const Notifications = () => {
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </Button>
-            <Button>
+            <Button onClick={markAllRead}>
               <Check className="mr-2 h-4 w-4" />
               Mark All Read
             </Button>
@@ -56,13 +83,15 @@ const Notifications = () => {
         </div>
 
         <div className="grid gap-4">
-          {notifications.map((notification) => (
+          {allNotifications.map((notification) => {
+            const IconComponent = typeof notification.icon === 'string' ? getIcon(notification.icon) : notification.icon;
+            return (
             <Card key={notification.id} className={`${notification.unread ? 'border-primary/50' : ''}`}>
               <CardContent className="p-4">
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <notification.icon className="h-5 w-5 text-primary" />
+                      <IconComponent className="h-5 w-5 text-primary" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -88,7 +117,7 @@ const Notifications = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )})}
         </div>
       </div>
     </AppLayout>

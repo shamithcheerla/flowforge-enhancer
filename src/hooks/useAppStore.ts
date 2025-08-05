@@ -13,12 +13,14 @@ export interface Task {
 
 export interface Project {
   id: number;
+  name: string;
   title: string;
   description: string;
   priority: 'low' | 'medium' | 'high';
   progress: number;
   team: string[];
   dueDate: string;
+  endDate: string;
   status: 'planning' | 'active' | 'completed' | 'on-hold';
   createdAt: Date;
 }
@@ -49,6 +51,12 @@ interface AppState {
   projects: Project[];
   events: Event[];
   goals: Goal[];
+  user: {
+    name: string;
+    email: string;
+    role: string;
+  };
+  notifications: any[];
   isTimerRunning: boolean;
   timerSeconds: number;
   currentTask: string;
@@ -82,12 +90,14 @@ const initialState: AppState = {
   projects: [
     {
       id: 1,
+      name: "Website Redesign",
       title: "Website Redesign",
       description: "Complete overhaul of company website",
       priority: "high",
       progress: 75,
       team: ["Alex Johnson", "Sarah Williams"],
       dueDate: "2024-02-15",
+      endDate: "2024-02-15",
       status: "active",
       createdAt: new Date()
     }
@@ -115,6 +125,12 @@ const initialState: AppState = {
       createdAt: new Date()
     }
   ],
+  user: {
+    name: "Alex Johnson",
+    email: "alex@nexaflow.com",
+    role: "Product Manager"
+  },
+  notifications: [],
   isTimerRunning: false,
   timerSeconds: 0,
   currentTask: ""
@@ -131,14 +147,21 @@ export function useAppStore() {
   }, [state]);
 
   const addTask = (task: Omit<Task, 'id' | 'createdAt'>) => {
+    const newTask = {
+      ...task,
+      id: Date.now(),
+      createdAt: new Date()
+    };
     setState(prev => ({
       ...prev,
-      tasks: [...prev.tasks, {
-        ...task,
-        id: Date.now(),
-        createdAt: new Date()
-      }]
+      tasks: [...prev.tasks, newTask]
     }));
+    addNotification({
+      type: "task",
+      title: "New task created",
+      message: `Task "${task.title}" has been created`,
+      icon: "CheckSquare"
+    });
   };
 
   const updateTask = (id: number, updates: Partial<Task>) => {
@@ -158,14 +181,21 @@ export function useAppStore() {
   };
 
   const addProject = (project: Omit<Project, 'id' | 'createdAt'>) => {
+    const newProject = {
+      ...project,
+      id: Date.now(),
+      createdAt: new Date()
+    };
     setState(prev => ({
       ...prev,
-      projects: [...prev.projects, {
-        ...project,
-        id: Date.now(),
-        createdAt: new Date()
-      }]
+      projects: [...prev.projects, newProject]
     }));
+    addNotification({
+      type: "project",
+      title: "New project created",
+      message: `Project "${project.name || project.title}" has been created`,
+      icon: "FolderKanban"
+    });
   };
 
   const updateProject = (id: number, updates: Partial<Project>) => {
@@ -178,14 +208,21 @@ export function useAppStore() {
   };
 
   const addEvent = (event: Omit<Event, 'id' | 'createdAt'>) => {
+    const newEvent = {
+      ...event,
+      id: Date.now(),
+      createdAt: new Date()
+    };
     setState(prev => ({
       ...prev,
-      events: [...prev.events, {
-        ...event,
-        id: Date.now(),
-        createdAt: new Date()
-      }]
+      events: [...prev.events, newEvent]
     }));
+    addNotification({
+      type: "event",
+      title: "New event created",
+      message: `Event "${event.title}" has been scheduled`,
+      icon: "Calendar"
+    });
   };
 
   const addGoal = (goal: Omit<Goal, 'id' | 'createdAt'>) => {
@@ -242,6 +279,30 @@ export function useAppStore() {
     startTimer,
     pauseTimer,
     stopTimer,
-    updateTimer
+    updateTimer,
+    user: state.user,
+    notifications: state.notifications,
+    setUser,
+    addNotification
   };
+
+  function setUser(newUser: { name: string; email: string; role: string }) {
+    setState(prev => ({
+      ...prev,
+      user: newUser
+    }));
+  }
+
+  function addNotification(notification: any) {
+    const newNotification = {
+      id: Date.now(),
+      ...notification,
+      time: "Just now",
+      unread: true
+    };
+    setState(prev => ({
+      ...prev,
+      notifications: [newNotification, ...prev.notifications]
+    }));
+  }
 }
