@@ -139,7 +139,15 @@ const initialState: AppState = {
 export function useAppStore() {
   const [state, setState] = useState<AppState>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : initialState;
+    if (saved) {
+      const parsedState = JSON.parse(saved);
+      // Ensure notifications is always an array
+      if (!Array.isArray(parsedState.notifications)) {
+        parsedState.notifications = [];
+      }
+      return parsedState;
+    }
+    return initialState;
   });
 
   useEffect(() => {
@@ -302,7 +310,7 @@ export function useAppStore() {
     };
     setState(prev => ({
       ...prev,
-      notifications: [newNotification, ...prev.notifications]
+      notifications: [newNotification, ...(Array.isArray(prev.notifications) ? prev.notifications : [])]
     }));
   }
 }
