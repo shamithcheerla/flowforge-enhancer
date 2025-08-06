@@ -17,9 +17,9 @@ const Profile = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user.name,
-    email: user.email,
-    role: user.role,
+    name: user?.name || "",
+    email: user?.email || "",
+    role: user?.role || "",
     phone: "+1 (555) 123-4567",
     location: "San Francisco, CA",
     bio: "Passionate product manager with 5+ years of experience in agile development and team leadership.",
