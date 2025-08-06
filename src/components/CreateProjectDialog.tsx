@@ -39,12 +39,14 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
     }
 
     addProject({
+      name: title.trim(),
       title: title.trim(),
       description: description.trim(),
       priority: (priority || "medium") as "low" | "medium" | "high",
       progress: 0,
       team: ["Alex Johnson"],
       dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+      endDate: dueDate ? format(dueDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       status: "planning"
     });
     
