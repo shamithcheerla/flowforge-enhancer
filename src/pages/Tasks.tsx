@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { useAppStore } from "@/hooks/useAppStore";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const Tasks = () => {
-  const { tasks, updateTask } = useAppStore();
+  const { tasks, updateTask, deleteTask } = useAppStore();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredTasks = tasks.filter(task => 
@@ -120,7 +120,7 @@ const Tasks = () => {
                           </div>
                           <span>{task.dueDate}</span>
                         </div>
-                        <div className="flex space-x-1">
+                        <div className="flex flex-wrap gap-1">
                           {["todo", "in-progress", "review", "completed"].map((status) => (
                             <Button
                               key={status}
@@ -132,6 +132,14 @@ const Tasks = () => {
                               {status === "in-progress" ? "Progress" : status.charAt(0).toUpperCase() + status.slice(1)}
                             </Button>
                           ))}
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteTask(task.id)}
+                            className="text-xs h-6 px-2"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
                     </CardContent>

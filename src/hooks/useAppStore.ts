@@ -186,6 +186,12 @@ export function useAppStore() {
       ...prev,
       tasks: prev.tasks.filter(task => task.id !== id)
     }));
+    addNotification({
+      type: "task",
+      title: "Task deleted",
+      message: "Task has been deleted successfully",
+      icon: "CheckSquare"
+    });
   };
 
   const addProject = (project: Omit<Project, 'id' | 'createdAt'>) => {
@@ -212,6 +218,55 @@ export function useAppStore() {
       projects: prev.projects.map(project => 
         project.id === id ? { ...project, ...updates } : project
       )
+    }));
+  };
+
+  const deleteProject = (id: number) => {
+    setState(prev => ({
+      ...prev,
+      projects: prev.projects.filter(project => project.id !== id)
+    }));
+    addNotification({
+      type: "project",
+      title: "Project deleted",
+      message: "Project has been deleted successfully",
+      icon: "FolderKanban"
+    });
+  };
+
+  const deleteEvent = (id: number) => {
+    setState(prev => ({
+      ...prev,
+      events: prev.events.filter(event => event.id !== id)
+    }));
+    addNotification({
+      type: "event", 
+      title: "Event deleted",
+      message: "Event has been deleted successfully",
+      icon: "Calendar"
+    });
+  };
+
+  const markNotificationRead = (id: string | number) => {
+    setState(prev => ({
+      ...prev,
+      notifications: (Array.isArray(prev.notifications) ? prev.notifications : []).map(notif => 
+        notif.id === id ? { ...notif, unread: false } : notif
+      )
+    }));
+  };
+
+  const deleteNotification = (id: string | number) => {
+    setState(prev => ({
+      ...prev,
+      notifications: (Array.isArray(prev.notifications) ? prev.notifications : []).filter(notif => notif.id !== id)
+    }));
+  };
+
+  const markAllNotificationsRead = () => {
+    setState(prev => ({
+      ...prev,
+      notifications: (Array.isArray(prev.notifications) ? prev.notifications : []).map(notif => ({ ...notif, unread: false }))
     }));
   };
 
@@ -282,7 +337,9 @@ export function useAppStore() {
     deleteTask,
     addProject,
     updateProject,
+    deleteProject,
     addEvent,
+    deleteEvent,
     addGoal,
     startTimer,
     pauseTimer,
@@ -291,7 +348,10 @@ export function useAppStore() {
     user: state.user,
     notifications: state.notifications,
     setUser,
-    addNotification
+    addNotification,
+    markNotificationRead,
+    deleteNotification,
+    markAllNotificationsRead
   };
 
   function setUser(newUser: { name: string; email: string; role: string }) {

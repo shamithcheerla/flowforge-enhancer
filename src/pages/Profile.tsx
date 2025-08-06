@@ -25,7 +25,8 @@ const Profile = () => {
     bio: "Passionate product manager with 5+ years of experience in agile development and team leadership.",
     company: "NexaFlow Inc.",
     department: "Product Development",
-    timezone: "Pacific Time (PT)"
+    timezone: "Pacific Time (PT)",
+    profilePicture: ""
   });
 
   const handleSave = () => {
@@ -43,6 +44,40 @@ const Profile = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleProfilePictureChange = () => {
+    // Create input element for file selection
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment'; // This enables camera option on mobile
+    
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setFormData(prev => ({ ...prev, profilePicture: result }));
+          toast({
+            title: "Profile Picture Updated",
+            description: "Your profile picture has been updated successfully"
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    
+    // Show options for gallery or camera on mobile
+    if (navigator.userAgent.match(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i)) {
+      const action = confirm("Choose from Gallery (OK) or Take Photo (Cancel)?");
+      if (!action) {
+        input.capture = 'user'; // Front camera for selfies
+      }
+    }
+    
+    input.click();
   };
 
   return (
@@ -78,11 +113,23 @@ const Profile = () => {
               <div className="text-center space-y-4">
                 <div className="relative inline-block">
                   <Avatar className="w-24 h-24">
-                    <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                      {formData.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
+                    {formData.profilePicture ? (
+                      <img 
+                        src={formData.profilePicture} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover rounded-full" 
+                      />
+                    ) : (
+                      <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                        {formData.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    )}
                   </Avatar>
-                  <Button size="sm" className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0">
+                  <Button 
+                    size="sm" 
+                    className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
+                    onClick={handleProfilePictureChange}
+                  >
                     <Camera className="h-4 w-4" />
                   </Button>
                 </div>

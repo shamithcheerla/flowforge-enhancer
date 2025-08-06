@@ -116,7 +116,10 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
         <div className="mt-3 flex space-x-2">
           <ThemeToggle />
-          <Button size="sm" variant="outline">
+          <Button size="sm" variant="outline" onClick={() => {
+            localStorage.removeItem('nexaflow_app_state');
+            window.location.reload();
+          }}>
             Logout
           </Button>
         </div>

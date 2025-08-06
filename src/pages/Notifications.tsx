@@ -7,7 +7,7 @@ import { useAppStore } from "@/hooks/useAppStore";
 import { useToast } from "@/hooks/use-toast";
 
 const Notifications = () => {
-  const { notifications, tasks, projects } = useAppStore();
+  const { notifications, tasks, projects, markNotificationRead, deleteNotification, markAllNotificationsRead } = useAppStore();
   const { toast } = useToast();
 
   // Check for deadline notifications
@@ -56,9 +56,26 @@ const Notifications = () => {
   };
 
   const markAllRead = () => {
+    markAllNotificationsRead();
     toast({
       title: "Notifications marked as read",
       description: "All notifications have been marked as read"
+    });
+  };
+
+  const handleMarkRead = (notificationId: string | number) => {
+    markNotificationRead(notificationId);
+    toast({
+      title: "Marked as read",
+      description: "Notification has been marked as read"
+    });
+  };
+
+  const handleDelete = (notificationId: string | number) => {
+    deleteNotification(notificationId);
+    toast({
+      title: "Notification deleted",
+      description: "Notification has been removed"
     });
   };
 
@@ -107,10 +124,10 @@ const Notifications = () => {
                     <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
                   </div>
                   <div className="flex space-x-1">
-                    <Button size="sm" variant="ghost">
+                    <Button size="sm" variant="ghost" onClick={() => handleMarkRead(notification.id)}>
                       <Check className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="ghost">
+                    <Button size="sm" variant="ghost" onClick={() => handleDelete(notification.id)}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>

@@ -8,11 +8,11 @@ import { StatsCard } from "@/components/ui/stats-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { useAppStore } from "@/hooks/useAppStore";
-import { Plus, Search, Filter, Edit, ExternalLink, Users, Calendar, FolderKanban } from "lucide-react";
+import { Plus, Search, Filter, Edit, ExternalLink, Users, Calendar, FolderKanban, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const Projects = () => {
-  const { projects, tasks } = useAppStore();
+  const { projects, tasks, deleteProject } = useAppStore();
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -144,6 +144,9 @@ const Projects = () => {
                         </Button>
                         <Button size="sm" variant="ghost">
                           <ExternalLink className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteProject(project.id)}>
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>

@@ -26,6 +26,15 @@ const Settings = () => {
   const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
   const [currency, setCurrency] = useState("USD");
 
+  const languageNames = {
+    en: "English",
+    es: "Español", 
+    fr: "Français",
+    de: "Deutsch",
+    zh: "中文",
+    ja: "日本語"
+  };
+
   const handleSettingChange = (setting: string, value: boolean | string) => {
     toast({
       title: "Setting Updated",
@@ -150,7 +159,10 @@ const Settings = () => {
                 <Label>Language</Label>
                 <Select value={language} onValueChange={(value) => {
                   setLanguage(value);
-                  handleSettingChange("Language", value);
+                  // Apply language change to document
+                  document.documentElement.lang = value;
+                  localStorage.setItem('nexaflow_language', value);
+                  handleSettingChange(`Language to ${languageNames[value as keyof typeof languageNames]}`, value);
                 }}>
                   <SelectTrigger>
                     <SelectValue />

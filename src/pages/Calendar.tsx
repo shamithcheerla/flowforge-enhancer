@@ -2,13 +2,13 @@ import { useState } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
+import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Clock, MapPin, Trash2 } from "lucide-react";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { useAppStore } from "@/hooks/useAppStore";
 import { format } from "date-fns";
 
 const Calendar = () => {
-  const { events } = useAppStore();
+  const { events, deleteEvent } = useAppStore();
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const monthName = format(currentDate, "MMMM yyyy");
@@ -80,13 +80,23 @@ const Calendar = () => {
                               </div>
                             </div>
                           </div>
-                          <div className={`px-2 py-1 rounded-full text-xs ${
-                            event.type === 'meeting' ? 'bg-primary/10 text-primary' :
-                            event.type === 'deadline' ? 'bg-destructive/10 text-destructive' :
-                            event.type === 'reminder' ? 'bg-warning/10 text-warning' :
-                            'bg-muted text-muted-foreground'
-                          }`}>
-                            {event.type}
+                          <div className="flex items-center space-x-2">
+                            <div className={`px-2 py-1 rounded-full text-xs ${
+                              event.type === 'meeting' ? 'bg-primary/10 text-primary' :
+                              event.type === 'deadline' ? 'bg-destructive/10 text-destructive' :
+                              event.type === 'reminder' ? 'bg-warning/10 text-warning' :
+                              'bg-muted text-muted-foreground'
+                            }`}>
+                              {event.type}
+                            </div>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              onClick={() => deleteEvent(event.id)}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         </div>
                       </CardContent>

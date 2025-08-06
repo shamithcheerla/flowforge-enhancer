@@ -6,10 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarIcon, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { useAppStore } from "@/hooks/useAppStore";
 
 interface CreateEventDialogProps {
   children?: React.ReactNode;
@@ -24,7 +26,9 @@ export function CreateEventDialog({ children, onEventCreated }: CreateEventDialo
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
+  const [eventType, setEventType] = useState<"meeting" | "deadline" | "reminder" | "event">("event");
   const { toast } = useToast();
+  const { addEvent } = useAppStore();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,16 +43,14 @@ export function CreateEventDialog({ children, onEventCreated }: CreateEventDialo
     }
 
     const newEvent = {
-      id: Date.now(),
       title: title.trim(),
       description: description.trim(),
-      date: format(date, "PPP"),
-      startTime: startTime || "09:00",
-      endTime: endTime || "10:00",
-      location: location.trim(),
-      createdAt: new Date()
+      date: date,
+      time: startTime || "09:00",
+      type: eventType
     };
 
+    addEvent(newEvent);
     onEventCreated?.(newEvent);
     
     toast({
@@ -63,6 +65,7 @@ export function CreateEventDialog({ children, onEventCreated }: CreateEventDialo
     setStartTime("");
     setEndTime("");
     setLocation("");
+    setEventType("event");
     setOpen(false);
   };
 
@@ -159,6 +162,21 @@ export function CreateEventDialog({ children, onEventCreated }: CreateEventDialo
               onChange={(e) => setLocation(e.target.value)}
               placeholder="Enter location (optional)..."
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Event Type</Label>
+            <Select value={eventType} onValueChange={(value: "meeting" | "deadline" | "reminder" | "event") => setEventType(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="event">Event</SelectItem>
+                <SelectItem value="meeting">Meeting</SelectItem>
+                <SelectItem value="deadline">Deadline</SelectItem>
+                <SelectItem value="reminder">Reminder</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
