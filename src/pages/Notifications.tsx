@@ -44,7 +44,7 @@ const Notifications = () => {
     }))
   ];
 
-  const allNotifications = [...notifications, ...deadlineNotifications];
+  const allNotifications = [...(notifications || []), ...deadlineNotifications];
 
   const getIcon = (iconName: string) => {
     switch(iconName) {
