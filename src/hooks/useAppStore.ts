@@ -55,6 +55,7 @@ interface AppState {
     name: string;
     email: string;
     role: string;
+    avatar?: string;
   };
   notifications: any[];
   isTimerRunning: boolean;
@@ -128,7 +129,8 @@ const initialState: AppState = {
   user: {
     name: "Alex Johnson",
     email: "alex@nexaflow.com",
-    role: "Product Manager"
+    role: "Product Manager",
+    avatar: undefined
   },
   notifications: [],
   isTimerRunning: false,
@@ -354,7 +356,7 @@ export function useAppStore() {
     markAllNotificationsRead
   };
 
-  function setUser(newUser: { name: string; email: string; role: string }) {
+  function setUser(newUser: { name: string; email: string; role: string; avatar?: string }) {
     setState(prev => ({
       ...prev,
       user: newUser

@@ -43,42 +43,51 @@ const navigation = [
 
 interface SidebarProps {
   className?: string;
+  collapsed?: boolean;
 }
 
-export function Sidebar({ className }: SidebarProps) {
+export function Sidebar({ className, collapsed = false }: SidebarProps) {
   const location = useLocation();
   const { user } = useAppStore();
 
   return (
-    <div className={cn("flex h-full w-64 flex-col bg-surface border-r border-border", className)}>
-      {/* Logo */}
-      <div className="flex h-16 items-center px-6 border-b border-border">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">N</span>
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">NexaFlow</h1>
-            <p className="text-xs text-muted-foreground">Advanced Task Manager</p>
+    <div className={cn(
+      "flex h-full flex-col bg-surface border-r border-border transition-all duration-300",
+      collapsed ? "w-16" : "w-64",
+      className
+    )}>
+      {/* Logo - Hidden when collapsed */}
+      {!collapsed && (
+        <div className="flex h-16 items-center px-6 border-b border-border">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">N</span>
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">NexaFlow</h1>
+              <p className="text-xs text-muted-foreground">Advanced Task Manager</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Quick Actions */}
-      <div className="p-4 border-b border-border">
-        <h3 className="text-sm font-medium text-muted-foreground mb-3">Quick Actions</h3>
-        <div className="space-y-2">
-          <CreateTaskDialog>
-            <Button size="sm" className="w-full justify-start">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Task
+      {/* Quick Actions - Hidden when collapsed */}
+      {!collapsed && (
+        <div className="p-4 border-b border-border">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">Quick Actions</h3>
+          <div className="space-y-2">
+            <CreateTaskDialog>
+              <Button size="sm" className="w-full justify-start">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Task
+              </Button>
+            </CreateTaskDialog>
+            <Button size="sm" variant="outline" className="w-full justify-start">
+              Search
             </Button>
-          </CreateTaskDialog>
-          <Button size="sm" variant="outline" className="w-full justify-start">
-            Search
-          </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 custom-scrollbar overflow-y-auto">
@@ -89,41 +98,22 @@ export function Sidebar({ className }: SidebarProps) {
               <Button
                 variant={isActive ? "secondary" : "ghost"}
                 className={cn(
-                  "w-full justify-start h-10",
+                  "w-full h-10",
+                  collapsed ? "justify-center px-0" : "justify-start",
                   isActive && "bg-primary/10 text-primary hover:bg-primary/20"
                 )}
+                title={collapsed ? item.name : undefined}
               >
-                <item.icon className="mr-3 h-4 w-4" />
-                {item.name}
+                <item.icon className={cn("h-4 w-4", !collapsed && "mr-3")} />
+                {!collapsed && item.name}
               </Button>
             </Link>
           );
         })}
       </nav>
 
-      {/* User Profile */}
-      <div className="p-4 border-t border-border">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-            <span className="text-primary-foreground font-medium text-sm">
-              {user?.name ? user.name.split(' ').map(n => n[0]).join('') : 'U'}
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{user?.name || 'User'}</p>
-            <p className="text-xs text-muted-foreground truncate">{user?.role || 'Member'}</p>
-          </div>
-        </div>
-        <div className="mt-3 flex space-x-2">
-          <ThemeToggle />
-          <Button size="sm" variant="outline" onClick={() => {
-            localStorage.removeItem('nexaflow_app_state');
-            window.location.reload();
-          }}>
-            Logout
-          </Button>
-        </div>
-      </div>
+      {/* Bottom spacing when collapsed */}
+      {collapsed && <div className="p-4"></div>}
     </div>
   );
 }

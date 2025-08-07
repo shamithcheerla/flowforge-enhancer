@@ -13,6 +13,13 @@ const Calendar = () => {
 
   const monthName = format(currentDate, "MMMM yyyy");
 
+  // Filter events for current month
+  const currentMonthEvents = events.filter(event => {
+    const eventDate = new Date(event.date);
+    return eventDate.getMonth() === currentDate.getMonth() && 
+           eventDate.getFullYear() === currentDate.getFullYear();
+  });
+
   const previousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
@@ -56,13 +63,13 @@ const Calendar = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {events.length === 0 ? (
+              {currentMonthEvents.length === 0 ? (
                 <div className="h-96 flex items-center justify-center bg-muted rounded-lg">
-                  <p className="text-muted-foreground">No events scheduled</p>
+                  <p className="text-muted-foreground">No events scheduled for {monthName}</p>
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {events.map((event) => (
+                  {currentMonthEvents.map((event) => (
                     <Card key={event.id} className="bg-surface border-card-border">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">

@@ -5,17 +5,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Palette, Sun, Moon, Monitor } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "next-themes";
 
 export function ThemeSelector() {
-  const { theme, setTheme } = useTheme();
-  const [selectedColorScheme, setSelectedColorScheme] = useState("default");
+  const [theme, setThemeState] = useState(() => 
+    localStorage.getItem('theme') || 'light'
+  );
+  const [selectedColorScheme, setSelectedColorScheme] = useState(() =>
+    localStorage.getItem('colorScheme') || 'default'
+  );
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Apply saved theme on mount
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    if (theme === 'system') {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', isDark);
+    }
+  }, [theme]);
 
   const themes = [
     { value: "light", label: "Light", icon: Sun },
@@ -33,7 +42,19 @@ export function ThemeSelector() {
   ];
 
   const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme);
+    setThemeState(newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // Apply theme immediately
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (newTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else if (newTheme === 'system') {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', isDark);
+    }
+    
     toast({
       title: "Theme Updated",
       description: `Switched to ${newTheme} theme`
@@ -42,31 +63,42 @@ export function ThemeSelector() {
 
   const handleColorSchemeChange = (scheme: string) => {
     setSelectedColorScheme(scheme);
+    localStorage.setItem('colorScheme', scheme);
+    
     // Apply color scheme to CSS variables
     const root = document.documentElement;
-    const schemeConfig = colorSchemes.find(c => c.value === scheme);
     
-    if (schemeConfig) {
-      // Update CSS custom properties based on color scheme
-      switch (scheme) {
-        case 'emerald':
-          root.style.setProperty('--primary', '160 84% 39%');
-          break;
-        case 'purple':
-          root.style.setProperty('--primary', '262 83% 58%');
-          break;
-        case 'rose':
-          root.style.setProperty('--primary', '347 77% 50%');
-          break;
-        case 'orange':
-          root.style.setProperty('--primary', '25 95% 53%');
-          break;
-        case 'slate':
-          root.style.setProperty('--primary', '210 40% 50%');
-          break;
-        default:
-          root.style.setProperty('--primary', '221 83% 53%');
-      }
+    // Update CSS custom properties based on color scheme
+    switch (scheme) {
+      case 'emerald':
+        root.style.setProperty('--primary', '160 84% 39%');
+        root.style.setProperty('--primary-hover', '160 84% 34%');
+        root.style.setProperty('--primary-glow', '160 84% 44%');
+        break;
+      case 'purple':
+        root.style.setProperty('--primary', '262 83% 58%');
+        root.style.setProperty('--primary-hover', '262 83% 53%');
+        root.style.setProperty('--primary-glow', '262 83% 63%');
+        break;
+      case 'rose':
+        root.style.setProperty('--primary', '347 77% 50%');
+        root.style.setProperty('--primary-hover', '347 77% 45%');
+        root.style.setProperty('--primary-glow', '347 77% 55%');
+        break;
+      case 'orange':
+        root.style.setProperty('--primary', '25 95% 53%');
+        root.style.setProperty('--primary-hover', '25 95% 48%');
+        root.style.setProperty('--primary-glow', '25 95% 58%');
+        break;
+      case 'slate':
+        root.style.setProperty('--primary', '210 40% 50%');
+        root.style.setProperty('--primary-hover', '210 40% 45%');
+        root.style.setProperty('--primary-glow', '210 40% 55%');
+        break;
+      default:
+        root.style.setProperty('--primary', '221.2 83.2% 53.3%');
+        root.style.setProperty('--primary-hover', '221.2 83.2% 48%');
+        root.style.setProperty('--primary-glow', '221.2 83.2% 58%');
     }
     
     toast({
@@ -148,9 +180,12 @@ export function ThemeSelector() {
 
         <div className="pt-4 border-t border-border">
           <Button variant="outline" className="w-full" onClick={() => {
-            setTheme("system");
+            handleThemeChange("light");
             setSelectedColorScheme("default");
-            document.documentElement.style.setProperty('--primary', '221 83% 53%');
+            localStorage.setItem('colorScheme', 'default');
+            document.documentElement.style.setProperty('--primary', '221.2 83.2% 53.3%');
+            document.documentElement.style.setProperty('--primary-hover', '221.2 83.2% 48%');
+            document.documentElement.style.setProperty('--primary-glow', '221.2 83.2% 58%');
             toast({
               title: "Settings Reset",
               description: "Theme settings have been reset to defaults"
