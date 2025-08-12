@@ -43,17 +43,21 @@ export function ThemeSelector() {
 
   const handleThemeChange = (newTheme: string) => {
     setThemeState(newTheme);
-    localStorage.setItem('theme', newTheme);
     
     // Apply theme immediately
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else if (newTheme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else if (newTheme === 'system') {
-      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.toggle('dark', isDark);
-    }
+    const applyTheme = () => {
+      if (newTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (newTheme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else if (newTheme === 'system') {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', isDark);
+      }
+    };
+    
+    applyTheme();
+    localStorage.setItem('theme', newTheme);
     
     toast({
       title: "Theme Updated",

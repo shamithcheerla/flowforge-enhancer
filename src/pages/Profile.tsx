@@ -134,8 +134,8 @@ const Profile = () => {
                   </Button>
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">{formData.name}</h2>
-                  <p className="text-muted-foreground">{formData.role}</p>
+                  <h2 className="text-xl font-semibold text-foreground">{user?.name || formData.name}</h2>
+                  <p className="text-muted-foreground">{user?.role || formData.role}</p>
                   <div className="flex justify-center mt-2">
                     <Badge variant="secondary">{formData.department}</Badge>
                   </div>
@@ -161,7 +161,7 @@ const Profile = () => {
                   <Label htmlFor="name">Full Name</Label>
                   <Input
                     id="name"
-                    value={formData.name}
+                    value={user?.name || formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     disabled={!isEditing}
                   />
@@ -171,7 +171,7 @@ const Profile = () => {
                   <Input
                     id="email"
                     type="email"
-                    value={formData.email}
+                    value={user?.email || formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     disabled={!isEditing}
                   />
@@ -222,7 +222,7 @@ const Profile = () => {
                   <Label htmlFor="role">Job Title</Label>
                   <Input
                     id="role"
-                    value={formData.role}
+                    value={user?.role || formData.role}
                     onChange={(e) => handleInputChange('role', e.target.value)}
                     disabled={!isEditing}
                   />

@@ -9,17 +9,29 @@ export function ThemeToggle() {
 
   useEffect(() => {
     // Apply theme on mount and changes
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    const applyTheme = () => {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+    
+    // Apply theme immediately
+    applyTheme();
+    
     if (theme === 'system') {
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       document.documentElement.classList.toggle('dark', isDark);
     }
+    
+    // Store theme preference
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setThemeState(newTheme);
-    localStorage.setItem('theme', newTheme);
   };
 
   return (

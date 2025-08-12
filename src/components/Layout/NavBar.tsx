@@ -20,8 +20,14 @@ export function NavBar({ onToggleSidebar }: NavBarProps) {
   const { user } = useAppStore();
 
   const handleLogout = () => {
+    // Clear all stored data
     localStorage.removeItem('nexaflow_app_state');
-    window.location.reload();
+    localStorage.removeItem('theme');
+    localStorage.removeItem('colorScheme');
+    localStorage.removeItem('nexaflow_language');
+    
+    // Redirect to login page
+    window.location.href = '/';
   };
 
   return (

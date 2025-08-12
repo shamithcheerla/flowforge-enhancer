@@ -74,7 +74,7 @@ const Index = () => {
 
         {/* Center - Login Form */}
         <div className="flex justify-center">
-          <Card className="w-full max-w-md bg-surface/80 border-card-border backdrop-blur-sm shadow-card">
+          <Card className="w-full max-w-md bg-surface/90 border-card-border backdrop-blur-md shadow-card hover:shadow-glow transition-all duration-300 border border-border/50">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl text-foreground">Welcome</CardTitle>
               <CardDescription className="text-muted-foreground">
