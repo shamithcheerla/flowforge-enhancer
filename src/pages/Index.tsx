@@ -54,7 +54,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
         
         {/* Left Side - Smart Task Management */}
@@ -74,7 +74,7 @@ const Index = () => {
 
         {/* Center - Login Form */}
         <div className="flex justify-center">
-          <Card className="w-full max-w-md bg-surface/90 border-card-border backdrop-blur-md shadow-card hover:shadow-glow transition-all duration-300 border border-border/50">
+          <Card className="w-full max-w-md bg-surface border-card-border shadow-card hover:shadow-glow transition-all duration-300">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl text-foreground">Welcome</CardTitle>
               <CardDescription className="text-muted-foreground">
@@ -98,7 +98,7 @@ const Index = () => {
                         placeholder="alex@nexaflow.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="bg-input border-border"
+                        className="bg-background border-input"
                         required
                       />
                     </div>
@@ -110,7 +110,7 @@ const Index = () => {
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-input border-border"
+                        className="bg-background border-input"
                       />
                     </div>
                     <Button type="submit" className="w-full bg-primary hover:bg-primary-hover shadow-primary">
@@ -132,7 +132,7 @@ const Index = () => {
                         placeholder="Your full name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="bg-input border-border"
+                        className="bg-background border-input"
                         required
                       />
                     </div>
@@ -144,7 +144,7 @@ const Index = () => {
                         placeholder="your@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="bg-input border-border"
+                        className="bg-background border-input"
                         required
                       />
                     </div>
@@ -156,7 +156,7 @@ const Index = () => {
                         placeholder="Create a password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-input border-border"
+                        className="bg-background border-input"
                         required
                       />
                     </div>
@@ -168,7 +168,7 @@ const Index = () => {
                         placeholder="Confirm your password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="bg-input border-border"
+                        className="bg-background border-input"
                         required
                       />
                     </div>
