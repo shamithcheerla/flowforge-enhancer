@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,18 +7,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Timer, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAppStore } from "@/hooks/useAppStore";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setUser } = useAppStore();
+  const { user, signIn, signUp } = useAuth();
 
-  const handleSignIn = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast({
@@ -28,10 +35,17 @@ const Index = () => {
       });
       return;
     }
-    navigate("/dashboard");
+    
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    setLoading(false);
+    
+    if (!error) {
+      navigate("/dashboard");
+    }
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password || !confirmPassword) {
       toast({
@@ -49,8 +63,17 @@ const Index = () => {
       });
       return;
     }
-    setUser({ name, email, role: "Team Member" });
-    navigate("/dashboard");
+    
+    setLoading(true);
+    const { error } = await signUp(email, password, name);
+    setLoading(false);
+    
+    if (!error) {
+      toast({
+        title: "Success!",
+        description: "Please check your email to confirm your account.",
+      });
+    }
   };
 
   return (
@@ -113,12 +136,9 @@ const Index = () => {
                         className="bg-background border-input"
                       />
                     </div>
-                    <Button type="submit" className="w-full bg-primary hover:bg-primary-hover shadow-primary">
-                      Sign In
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary-hover shadow-primary" disabled={loading}>
+                      {loading ? "Signing In..." : "Sign In"}
                     </Button>
-                    <p className="text-center text-xs text-muted-foreground">
-                      Demo credentials: any email/password combination
-                    </p>
                   </form>
                 </TabsContent>
                 
@@ -172,8 +192,8 @@ const Index = () => {
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full bg-primary hover:bg-primary-hover shadow-primary">
-                      Create Account
+                    <Button type="submit" className="w-full bg-primary hover:bg-primary-hover shadow-primary" disabled={loading}>
+                      {loading ? "Creating Account..." : "Create Account"}
                     </Button>
                   </form>
                 </TabsContent>

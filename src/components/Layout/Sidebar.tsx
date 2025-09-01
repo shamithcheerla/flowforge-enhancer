@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   CheckSquare, 
@@ -15,13 +15,14 @@ import {
   Bell,
   Archive,
   Palette,
-  Plus
+  Plus,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useAppStore } from "@/hooks/useAppStore";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -48,7 +49,13 @@ interface SidebarProps {
 
 export function Sidebar({ className, collapsed = false }: SidebarProps) {
   const location = useLocation();
-  const { user } = useAppStore();
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <div className={cn(
@@ -114,6 +121,40 @@ export function Sidebar({ className, collapsed = false }: SidebarProps) {
 
       {/* Bottom spacing when collapsed */}
       {collapsed && <div className="p-4"></div>}
+
+      {/* User Profile Section */}
+      <div className="p-4 border-t border-border">
+        <div className="flex items-center space-x-3 mb-3">
+          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
+            {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">
+                {profile?.full_name || user?.email || 'User'}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {profile?.role || 'Team Member'}
+              </p>
+            </div>
+          )}
+        </div>
+        
+        {!collapsed && (
+          <div className="flex items-center justify-between space-x-2">
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="flex-1"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

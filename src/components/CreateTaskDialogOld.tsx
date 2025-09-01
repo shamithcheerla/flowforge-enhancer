@@ -11,12 +11,11 @@ import { CalendarIcon, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAppStore } from "@/hooks/useAppStore";
 
 interface CreateTaskDialogProps {
   children?: React.ReactNode;
-  onTaskCreated?: () => void;
+  onTaskCreated?: (task: any) => void;
 }
 
 export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogProps) {
@@ -25,11 +24,12 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
+  const [assignee, setAssignee] = useState("");
   const [dueDate, setDueDate] = useState<Date>();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { addTask } = useAppStore();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title.trim()) {
@@ -41,42 +41,30 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
       return;
     }
 
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('tasks')
-        .insert({
-          user_id: user?.id,
-          title: title.trim(),
-          description: description.trim() || null,
-          priority: priority || "medium",
-          due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
-          status: 'todo'
-        });
+    const newTask = {
+      title: title.trim(),
+      description: description.trim(),
+      priority: (priority || "medium") as "low" | "medium" | "high" | "urgent",
+      assignee: assignee || "Unassigned",
+      dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
+      status: "todo" as const
+    };
 
-      if (error) throw error;
+    addTask(newTask);
+    onTaskCreated?.(newTask);
+    
+    toast({
+      title: "Success",
+      description: "Task created successfully!"
+    });
 
-      toast({
-        title: "Success",
-        description: "Task created successfully!"
-      });
-
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setPriority("");
-      setDueDate(undefined);
-      setOpen(false);
-      onTaskCreated?.();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+    // Reset form
+    setTitle("");
+    setDescription("");
+    setPriority("");
+    setAssignee("");
+    setDueDate(undefined);
+    setOpen(false);
   };
 
   return (
@@ -116,18 +104,36 @@ export function CreateTaskDialog({ children, onTaskCreated }: CreateTaskDialogPr
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Priority</Label>
-            <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Priority</Label>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Assignee</Label>
+              <Select value={assignee} onValueChange={setAssignee}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select assignee" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alex-johnson">Alex Johnson</SelectItem>
+                  <SelectItem value="sarah-williams">Sarah Williams</SelectItem>
+                  <SelectItem value="mike-chen">Mike Chen</SelectItem>
+                  <SelectItem value="emma-davis">Emma Davis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
