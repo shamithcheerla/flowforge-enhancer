@@ -1,1 +1,7 @@
 project_id = "dyayppkpykaccfgtqpxi"
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.export-report]
+verify_jwt = true
