@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,25 +7,81 @@ import { Progress } from "@/components/ui/progress";
 import { StatsCard } from "@/components/ui/stats-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreateProjectDialog } from "@/components/CreateProjectDialog";
-import { useAppStore } from "@/hooks/useAppStore";
 import { Plus, Search, Filter, Edit, ExternalLink, Users, Calendar, FolderKanban, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Projects = () => {
-  const { projects, tasks, deleteProject } = useAppStore();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
+  useEffect(() => {
+    if (user) {
+      fetchProjects();
+    }
+  }, [user]);
+
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProjects(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProject = async (projectId: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setProjects(projects.filter(p => p.id !== projectId));
+      toast({
+        title: "Success",
+        description: "Project deleted successfully"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error", 
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
     if (!matchesSearch) return false;
     
     if (activeTab === "all") return true;
     if (activeTab === "active") return project.status === "active";
     if (activeTab === "completed") return project.status === "completed";
-    if (activeTab === "shared") return project.team.length > 1;
+    if (activeTab === "shared") return false; // No team functionality yet
     return true;
   });
 
@@ -74,7 +130,7 @@ const Projects = () => {
             <h1 className="text-3xl font-bold text-foreground">Projects</h1>
             <p className="text-muted-foreground">Organize and track your project progress</p>
           </div>
-          <CreateProjectDialog>
+          <CreateProjectDialog onProjectCreated={fetchProjects}>
             <Button className="bg-primary hover:bg-primary-hover shadow-primary">
               <Plus className="mr-2 h-4 w-4" />
               New Project
@@ -91,7 +147,7 @@ const Projects = () => {
           />
           <StatsCard
             title="Average Completion"
-            value={`${Math.round(projects.reduce((acc, p) => acc + p.progress, 0) / projects.length) || 0}%`}
+            value={`${Math.round(projects.reduce((acc, p) => acc + (p.progress || 0), 0) / projects.length) || 0}%`}
             icon={<Calendar className="h-4 w-4" />}
           />
           <StatsCard
@@ -129,171 +185,178 @@ const Projects = () => {
           </div>
 
           <TabsContent value="all" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProjects.map((project) => (
-                <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <CardTitle className="text-lg text-foreground">{project.title}</CardTitle>
-                        <StatusBadge status={project.priority} />
-                      </div>
-                      <div className="flex space-x-1">
-                        <Button size="sm" variant="ghost">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => deleteProject(project.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground text-sm line-clamp-2">
-                      {project.description}
-                    </p>
-                    
-                    {/* Progress */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-foreground font-medium">Progress</span>
-                        <span className="text-foreground">{project.progress}%</span>
-                      </div>
-                      <Progress value={project.progress} className="h-2" />
-                      <p className="text-xs text-muted-foreground">
-                        {100 - project.progress}% remaining
-                      </p>
-                    </div>
-                    
-                    {/* Team */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-foreground">Team ({project.team.length})</span>
-                        <div className="flex -space-x-1">
-                          {project.team.slice(0, 4).map((member, index) => (
-                            <div
-                              key={index}
-                              className="w-6 h-6 bg-primary rounded-full border-2 border-surface flex items-center justify-center"
-                            >
-                              <span className="text-xs text-primary-foreground font-medium">
-                                {member}
-                              </span>
-                            </div>
-                          ))}
-                          {project.team.length > 4 && (
-                            <div className="w-6 h-6 bg-muted rounded-full border-2 border-surface flex items-center justify-center">
-                              <span className="text-xs text-muted-foreground">
-                                +{project.team.length - 4}
-                              </span>
-                            </div>
-                          )}
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredProjects.map((project) => (
+                  <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <CardTitle className="text-lg text-foreground">{project.name}</CardTitle>
+                          <StatusBadge status="medium" />
+                        </div>
+                        <div className="flex space-x-1">
+                          <Button size="sm" variant="ghost">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost">
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => deleteProject(project.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                    </div>
+                    </CardHeader>
                     
-                    {/* Due Date */}
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Due {project.dueDate}</span>
-                      <span className="text-foreground">{Math.ceil((new Date(project.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days</span>
-                    </div>
-                    
-                    <div className="flex space-x-2 pt-2">
-                      <Button size="sm" variant="outline" className="flex-1">
-                        Edit
-                      </Button>
-                      <Button size="sm" className="flex-1">
-                        Open
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground text-sm line-clamp-2">
+                        {project.description}
+                      </p>
+                      
+                      {/* Progress */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-foreground font-medium">Progress</span>
+                          <span className="text-foreground">{project.progress || 0}%</span>
+                        </div>
+                        <Progress value={project.progress || 0} className="h-2" />
+                        <p className="text-xs text-muted-foreground">
+                          {100 - (project.progress || 0)}% remaining
+                        </p>
+                      </div>
+                      
+                      {/* Due Date */}
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">
+                          Due {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'No due date'}
+                        </span>
+                        {project.end_date && (
+                          <span className="text-foreground">
+                            {Math.max(0, Math.ceil((new Date(project.end_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))} days
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex space-x-2 pt-2">
+                        <Button size="sm" variant="outline" className="flex-1">
+                          Edit
+                        </Button>
+                        <Button size="sm" className="flex-1">
+                          Open
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="active">
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProjects.map((project) => (
-                <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <CardTitle className="text-lg text-foreground">{project.title}</CardTitle>
-                        <StatusBadge status={project.priority} />
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredProjects.filter(p => p.status === 'active').map((project) => (
+                  <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <CardTitle className="text-lg text-foreground">{project.name}</CardTitle>
+                          <StatusBadge status="medium" />
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground text-sm line-clamp-2">{project.description}</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-foreground font-medium">Progress</span>
-                        <span className="text-foreground">{project.progress}%</span>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground text-sm line-clamp-2">{project.description}</p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-foreground font-medium">Progress</span>
+                          <span className="text-foreground">{project.progress || 0}%</span>
+                        </div>
+                        <Progress value={project.progress || 0} className="h-2" />
                       </div>
-                      <Progress value={project.progress} className="h-2" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="completed">
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProjects.map((project) => (
-                <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <CardTitle className="text-lg text-foreground">{project.title}</CardTitle>
-                        <StatusBadge status={project.priority} />
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredProjects.filter(p => p.status === 'completed').map((project) => (
+                  <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <CardTitle className="text-lg text-foreground">{project.name}</CardTitle>
+                          <StatusBadge status="medium" />
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground text-sm line-clamp-2">{project.description}</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-foreground font-medium">Progress</span>
-                        <span className="text-foreground">{project.progress}%</span>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground text-sm line-clamp-2">{project.description}</p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-foreground font-medium">Progress</span>
+                          <span className="text-foreground">{project.progress || 0}%</span>
+                        </div>
+                        <Progress value={project.progress || 0} className="h-2" />
                       </div>
-                      <Progress value={project.progress} className="h-2" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="shared">
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProjects.map((project) => (
-                <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <CardTitle className="text-lg text-foreground">{project.title}</CardTitle>
-                        <StatusBadge status={project.priority} />
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredProjects.filter(p => false).map((project) => (
+                  <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <CardTitle className="text-lg text-foreground">{project.name}</CardTitle>
+                          <StatusBadge status="medium" />
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground text-sm line-clamp-2">{project.description}</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-foreground font-medium">Progress</span>
-                        <span className="text-foreground">{project.progress}%</span>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground text-sm line-clamp-2">{project.description}</p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-foreground font-medium">Progress</span>
+                          <span className="text-foreground">{project.progress || 0}%</span>
+                        </div>
+                        <Progress value={project.progress || 0} className="h-2" />
                       </div>
-                      <Progress value={project.progress} className="h-2" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                <div className="col-span-full text-center py-12">
+                  <p className="text-muted-foreground">Shared projects feature coming soon...</p>
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

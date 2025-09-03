@@ -118,16 +118,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`
+        redirectTo: `${window.location.origin}/dashboard`,
+        skipBrowserRedirect: false
       }
     });
 
     if (error) {
       toast({
-        title: "Google Sign In Error",
+        title: "Google Sign In Error", 
         description: error.message,
         variant: "destructive"
       });
+    } else {
+      // Refresh the page after successful OAuth to handle the redirect properly
+      window.location.reload();
     }
 
     return { error };

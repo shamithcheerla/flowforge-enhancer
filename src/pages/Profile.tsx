@@ -5,41 +5,49 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, Phone, MapPin, Briefcase, Calendar, Camera, Save, Edit } from "lucide-react";
-import { useAppStore } from "@/hooks/useAppStore";
+import { User, Briefcase, Camera, Save, Edit } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const Profile = () => {
-  const { user, setUser } = useAppStore();
+  const { user, profile, updateProfile } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    role: user?.role || "",
-    phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA",
-    bio: "Passionate product manager with 5+ years of experience in agile development and team leadership.",
-    company: "NexaFlow Inc.",
-    department: "Product Development",
-    timezone: "Pacific Time (PT)",
-    profilePicture: ""
+    full_name: profile?.full_name || "",
+    bio: profile?.bio || "Passionate team member focused on excellence and innovation.",
+    role: profile?.role || "Team Member",
+    avatar_url: profile?.avatar_url || ""
   });
 
-  const handleSave = () => {
-    setUser({
-      name: formData.name,
-      email: formData.email,
-      role: formData.role
-    });
-    setIsEditing(false);
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been updated successfully"
-    });
+  const handleSave = async () => {
+    if (!isEditing) {
+      setIsEditing(true);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const { error } = await updateProfile(formData);
+      if (!error) {
+        setIsEditing(false);
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been updated successfully"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -89,10 +97,13 @@ const Profile = () => {
             <p className="text-muted-foreground">Manage your personal information and preferences</p>
           </div>
           <Button 
-            onClick={isEditing ? handleSave : () => setIsEditing(true)}
+            onClick={handleSave}
+            disabled={loading}
             className={isEditing ? "bg-primary hover:bg-primary-hover" : ""}
           >
-            {isEditing ? (
+            {loading ? (
+              "Updating..."
+            ) : isEditing ? (
               <>
                 <Save className="mr-2 h-4 w-4" />
                 Save Changes
@@ -113,35 +124,36 @@ const Profile = () => {
               <div className="text-center space-y-4">
                 <div className="relative inline-block">
                   <Avatar className="w-24 h-24">
-                    {formData.profilePicture ? (
-                      <img 
-                        src={formData.profilePicture} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover rounded-full" 
-                      />
-                    ) : (
-                      <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                        {formData.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    )}
+                    <AvatarImage src={profile?.avatar_url} alt="Profile" />
+                    <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                      {profile?.full_name 
+                        ? profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
+                        : user?.email ? user.email[0].toUpperCase() : 'U'
+                      }
+                    </AvatarFallback>
                   </Avatar>
                   <Button 
                     size="sm" 
                     className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
-                    onClick={handleProfilePictureChange}
+                    onClick={() => {
+                      toast({
+                        title: "Coming Soon",
+                        description: "Profile picture upload feature coming soon!"
+                      });
+                    }}
                   >
                     <Camera className="h-4 w-4" />
                   </Button>
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">{user?.name || formData.name}</h2>
-                  <p className="text-muted-foreground">{user?.role || formData.role}</p>
+                  <h2 className="text-xl font-semibold text-foreground">{profile?.full_name || user?.email || 'User'}</h2>
+                  <p className="text-muted-foreground">{profile?.role || 'Team Member'}</p>
                   <div className="flex justify-center mt-2">
-                    <Badge variant="secondary">{formData.department}</Badge>
+                    <Badge variant="secondary">Product Team</Badge>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-border">
-                  <p className="text-sm text-muted-foreground">{formData.bio}</p>
+                  <p className="text-sm text-muted-foreground">{profile?.bio || formData.bio}</p>
                 </div>
               </div>
             </CardContent>
@@ -161,8 +173,8 @@ const Profile = () => {
                   <Label htmlFor="name">Full Name</Label>
                   <Input
                     id="name"
-                    value={user?.name || formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    value={isEditing ? formData.full_name : profile?.full_name || 'Not provided'}
+                    onChange={(e) => handleInputChange('full_name', e.target.value)}
                     disabled={!isEditing}
                   />
                 </div>
@@ -171,27 +183,27 @@ const Profile = () => {
                   <Input
                     id="email"
                     type="email"
-                    value={user?.email || formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    value={user?.email || 'Not provided'}
+                    disabled={true}
+                    className="bg-muted"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Input
+                    id="role"
+                    value={isEditing ? formData.role : profile?.role || 'Team Member'}
+                    onChange={(e) => handleInputChange('role', e.target.value)}
                     disabled={!isEditing}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="joined">Member Since</Label>
                   <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    disabled={!isEditing}
+                    id="joined"
+                    value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Recently'}
+                    disabled={true}
+                    className="bg-muted"
                   />
                 </div>
               </div>
@@ -199,7 +211,7 @@ const Profile = () => {
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea
                   id="bio"
-                  value={formData.bio}
+                  value={isEditing ? formData.bio : profile?.bio || 'No bio provided'}
                   onChange={(e) => handleInputChange('bio', e.target.value)}
                   disabled={!isEditing}
                   rows={3}
@@ -213,36 +225,36 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Briefcase className="h-5 w-5" />
-                <span>Work Information</span>
+                <span>Account Information</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="role">Job Title</Label>
+                  <Label htmlFor="user_id">User ID</Label>
                   <Input
-                    id="role"
-                    value={user?.role || formData.role}
-                    onChange={(e) => handleInputChange('role', e.target.value)}
-                    disabled={!isEditing}
+                    id="user_id"
+                    value={user?.id || 'Not available'}
+                    disabled={true}
+                    className="bg-muted font-mono text-sm"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="company">Company</Label>
+                  <Label htmlFor="auth_provider">Authentication</Label>
                   <Input
-                    id="company"
-                    value={formData.company}
-                    onChange={(e) => handleInputChange('company', e.target.value)}
-                    disabled={!isEditing}
+                    id="auth_provider"
+                    value="Supabase Auth"
+                    disabled={true}
+                    className="bg-muted"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="department">Department</Label>
+                  <Label htmlFor="account_status">Status</Label>
                   <Input
-                    id="department"
-                    value={formData.department}
-                    onChange={(e) => handleInputChange('department', e.target.value)}
-                    disabled={!isEditing}
+                    id="account_status"
+                    value="Active"
+                    disabled={true}
+                    className="bg-muted"
                   />
                 </div>
               </div>

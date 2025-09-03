@@ -11,22 +11,25 @@ import { CalendarIcon, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { useAppStore } from "@/hooks/useAppStore";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CreateProjectDialogProps {
   children?: React.ReactNode;
+  onProjectCreated?: () => void;
 }
 
-export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
+export function CreateProjectDialog({ children, onProjectCreated }: CreateProjectDialogProps) {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("");
   const [dueDate, setDueDate] = useState<Date>();
   const { toast } = useToast();
-  const { addProject } = useAppStore();
+  const { user } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title.trim()) {
@@ -38,28 +41,43 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
       return;
     }
 
-    addProject({
-      name: title.trim(),
-      title: title.trim(),
-      description: description.trim(),
-      priority: (priority || "medium") as "low" | "medium" | "high",
-      progress: 0,
-      team: ["Alex Johnson"],
-      dueDate: dueDate ? format(dueDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-      endDate: dueDate ? format(dueDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
-      status: "planning"
-    });
-    
-    toast({
-      title: "Success",
-      description: "Project created successfully!"
-    });
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .insert({
+          user_id: user?.id,
+          name: title.trim(),
+          description: description.trim() || null,
+          status: 'active',
+          progress: 0,
+          start_date: format(new Date(), "yyyy-MM-dd"),
+          end_date: dueDate ? format(dueDate, "yyyy-MM-dd") : null
+        });
 
-    setTitle("");
-    setDescription("");
-    setPriority("");
-    setDueDate(undefined);
-    setOpen(false);
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Project created successfully!"
+      });
+
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setPriority("");
+      setDueDate(undefined);
+      setOpen(false);
+      onProjectCreated?.();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -143,7 +161,9 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit">Create Project</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Creating..." : "Create Project"}
+            </Button>
           </div>
         </form>
       </DialogContent>

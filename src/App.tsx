@@ -18,7 +18,6 @@ import Notifications from "./pages/Notifications";
 import TimeTracking from "./pages/TimeTracking";
 import Reports from "./pages/Reports";
 import Goals from "./pages/Goals";
-import Templates from "./pages/Templates";
 import Automations from "./pages/Automations";
 import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
@@ -46,7 +45,7 @@ const App = () => (
           <Route path="/time-tracking" element={<ProtectedRoute><TimeTracking /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/goals" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
-          <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
+          
           <Route path="/automations" element={<ProtectedRoute><Automations /></ProtectedRoute>} />
           <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />

@@ -196,15 +196,6 @@ const Tasks = () => {
                   ))}
                 </div>
 
-                <CreateTaskDialog onTaskCreated={fetchTasks}>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start text-muted-foreground border-2 border-dashed border-muted"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add a task
-                  </Button>
-                </CreateTaskDialog>
               </div>
             ))}
           </div>

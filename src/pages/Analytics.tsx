@@ -3,12 +3,10 @@ import { AppLayout } from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatsCard } from "@/components/ui/stats-card";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { Progress } from "@/components/ui/progress";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { useAppStore } from "@/hooks/useAppStore";
 import { 
   BarChart3, 
   Download, 
@@ -19,20 +17,42 @@ import {
   Zap,
   Target,
   AlertTriangle,
-  Trophy
+  Trophy,
+  PieChart
 } from "lucide-react";
 import { format } from "date-fns";
+import { PieChart as RechartsPieChart, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Analytics = () => {
-  const { tasks, projects } = useAppStore();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [dateRange, setDateRange] = useState<Date>();
 
-  const handleExportReport = () => {
-    toast({
-      title: "Export Started",
-      description: "Your report is being generated and will be downloaded shortly."
-    });
+  const handleExportReport = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('export-report', {
+        body: { 
+          reportType: 'productivity',
+          format: 'csv',
+          dateRange: dateRange ? format(dateRange, 'yyyy-MM-dd') : null
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Export Started",
+        description: "Your report is being generated and will be downloaded shortly."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Export Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   const teamPerformance = [

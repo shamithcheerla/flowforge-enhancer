@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useAppStore } from "@/hooks/useAppStore";
+import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 
 interface NavBarProps {
@@ -17,17 +17,22 @@ interface NavBarProps {
 }
 
 export function NavBar({ onToggleSidebar }: NavBarProps) {
-  const { user } = useAppStore();
+  const { user, profile, signOut } = useAuth();
 
-  const handleLogout = () => {
-    // Clear all stored data
-    localStorage.removeItem('nexaflow_app_state');
-    localStorage.removeItem('theme');
-    localStorage.removeItem('colorScheme');
-    localStorage.removeItem('nexaflow_language');
-    
-    // Redirect to login page
-    window.location.href = '/';
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // Clear all stored data
+      localStorage.removeItem('nexaflow_app_state');
+      localStorage.removeItem('theme');
+      localStorage.removeItem('colorScheme'); 
+      localStorage.removeItem('nexaflow_language');
+      
+      // Redirect to login page
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
@@ -60,9 +65,12 @@ export function NavBar({ onToggleSidebar }: NavBarProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={user?.avatar} alt={user?.name || 'User'} />
+                  <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || user?.email || 'User'} />
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.name ? user.name.split(' ').map(n => n[0]).join('') : 'U'}
+                    {profile?.full_name 
+                      ? profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
+                      : user?.email ? user.email[0].toUpperCase() : 'U'
+                    }
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -70,9 +78,9 @@ export function NavBar({ onToggleSidebar }: NavBarProps) {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{user?.name || 'User'}</p>
+                  <p className="font-medium">{profile?.full_name || user?.email || 'User'}</p>
                   <p className="w-[200px] truncate text-sm text-muted-foreground">
-                    {user?.role || 'Member'}
+                    {profile?.role || 'Member'}
                   </p>
                 </div>
               </div>

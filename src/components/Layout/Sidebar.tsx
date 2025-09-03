@@ -34,7 +34,6 @@ const navigation = [
   { name: "Time Tracking", href: "/time-tracking", icon: Clock },
   { name: "Reports", href: "/reports", icon: FileText },
   { name: "Goals", href: "/goals", icon: Target },
-  { name: "Templates", href: "/templates", icon: Archive },
   { name: "Automations", href: "/automations", icon: Zap },
   { name: "Notifications", href: "/notifications", icon: Bell },
   { name: "Settings", href: "/settings", icon: Settings },
