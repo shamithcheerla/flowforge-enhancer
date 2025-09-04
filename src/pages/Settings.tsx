@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,22 +9,93 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { Settings as SettingsIcon, Bell, Shield, Palette, Users, Database, Globe, Lock, Smartphone, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAppStore } from "@/hooks/useAppStore";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
   const { toast } = useToast();
-  const { user } = useAppStore();
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [mobileNotifications, setMobileNotifications] = useState(true);
-  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
-  const [autoSave, setAutoSave] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [compactView, setCompactView] = useState(false);
-  const [language, setLanguage] = useState("en");
-  const [timezone, setTimezone] = useState("UTC");
-  const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
-  const [currency, setCurrency] = useState("USD");
+  const { user } = useAuth();
+  const [preferences, setPreferences] = useState<any>({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchUserPreferences();
+  }, [user]);
+
+  const fetchUserPreferences = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error fetching preferences:', error);
+        return;
+      }
+      
+      if (data) {
+        setPreferences(data);
+      } else {
+        // Create default preferences if none exist
+        const defaultPrefs = {
+          user_id: user.id,
+          notifications_email: true,
+          notifications_push: true,
+          notifications_desktop: true,
+          two_factor_enabled: false,
+          language: 'en',
+          timezone: 'UTC',
+          date_format: 'MM/dd/yyyy',
+          theme: 'system'
+        };
+        
+        const { data: newData, error: insertError } = await supabase
+          .from('user_preferences')
+          .insert([defaultPrefs])
+          .select()
+          .single();
+        
+        if (!insertError && newData) {
+          setPreferences(newData);
+        }
+      }
+    } catch (error) {
+      console.error('Error with preferences:', error);
+    }
+  };
+
+  const updatePreference = async (key: string, value: any) => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('user_preferences')
+        .update({ [key]: value })
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      setPreferences(prev => ({ ...prev, [key]: value }));
+      
+      toast({
+        title: "Setting Updated",
+        description: `${key.replace('_', ' ')} has been updated successfully`
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update setting",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const languageNames = {
     en: "English",
@@ -84,33 +155,27 @@ const Settings = () => {
                 <Label htmlFor="email-notif">Email notifications</Label>
                 <Switch 
                   id="email-notif" 
-                  checked={emailNotifications}
-                  onCheckedChange={(value) => {
-                    setEmailNotifications(value);
-                    handleSettingChange("Email notifications", value);
-                  }}
+                  checked={preferences.notifications_email || false}
+                  onCheckedChange={(value) => updatePreference('notifications_email', value)}
+                  disabled={loading}
                 />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="push-notif">Push notifications</Label>
                 <Switch 
                   id="push-notif" 
-                  checked={pushNotifications}
-                  onCheckedChange={(value) => {
-                    setPushNotifications(value);
-                    handleSettingChange("Push notifications", value);
-                  }}
+                  checked={preferences.notifications_push || false}
+                  onCheckedChange={(value) => updatePreference('notifications_push', value)}
+                  disabled={loading}
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="mobile-notif">Mobile app notifications</Label>
+                <Label htmlFor="desktop-notif">Desktop notifications</Label>
                 <Switch 
-                  id="mobile-notif" 
-                  checked={mobileNotifications}
-                  onCheckedChange={(value) => {
-                    setMobileNotifications(value);
-                    handleSettingChange("Mobile notifications", value);
-                  }}
+                  id="desktop-notif" 
+                  checked={preferences.notifications_desktop || false}
+                  onCheckedChange={(value) => updatePreference('notifications_desktop', value)}
+                  disabled={loading}
                 />
               </div>
             </CardContent>
@@ -130,11 +195,9 @@ const Settings = () => {
                 <Label htmlFor="2fa">Two-factor authentication</Label>
                 <Switch 
                   id="2fa" 
-                  checked={twoFactorAuth}
-                  onCheckedChange={(value) => {
-                    setTwoFactorAuth(value);
-                    handleSettingChange("Two-factor authentication", value);
-                  }}
+                  checked={preferences.two_factor_enabled || false}
+                  onCheckedChange={(value) => updatePreference('two_factor_enabled', value)}
+                  disabled={loading}
                 />
               </div>
               <div className="space-y-2">
@@ -157,12 +220,11 @@ const Settings = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Language</Label>
-                <Select value={language} onValueChange={(value) => {
-                  setLanguage(value);
+                <Select value={preferences.language || 'en'} onValueChange={(value) => {
+                  updatePreference('language', value);
                   // Apply language change to document
                   document.documentElement.lang = value;
                   localStorage.setItem('nexaflow_language', value);
-                  handleSettingChange(`Language to ${languageNames[value as keyof typeof languageNames]}`, value);
                 }}>
                   <SelectTrigger>
                     <SelectValue />
@@ -179,9 +241,8 @@ const Settings = () => {
               </div>
               <div className="space-y-2">
                 <Label>Timezone</Label>
-                <Select value={timezone} onValueChange={(value) => {
-                  setTimezone(value);
-                  handleSettingChange("Timezone", value);
+                <Select value={preferences.timezone || 'UTC'} onValueChange={(value) => {
+                  updatePreference('timezone', value);
                 }}>
                   <SelectTrigger>
                     <SelectValue />
@@ -198,9 +259,8 @@ const Settings = () => {
               </div>
               <div className="space-y-2">
                 <Label>Date Format</Label>
-                <Select value={dateFormat} onValueChange={(value) => {
-                  setDateFormat(value);
-                  handleSettingChange("Date format", value);
+                <Select value={preferences.date_format || 'MM/DD/YYYY'} onValueChange={(value) => {
+                  updatePreference('date_format', value);
                 }}>
                   <SelectTrigger>
                     <SelectValue />
@@ -216,22 +276,18 @@ const Settings = () => {
                 <Label htmlFor="auto-save">Auto-save drafts</Label>
                 <Switch 
                   id="auto-save" 
-                  checked={autoSave}
-                  onCheckedChange={(value) => {
-                    setAutoSave(value);
-                    handleSettingChange("Auto-save", value);
-                  }}
+                  checked={preferences.auto_save || false}
+                  onCheckedChange={(value) => updatePreference('auto_save', value)}
+                  disabled={loading}
                 />
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="compact-view">Compact view</Label>
                 <Switch 
                   id="compact-view" 
-                  checked={compactView}
-                  onCheckedChange={(value) => {
-                    setCompactView(value);
-                    handleSettingChange("Compact view", value);
-                  }}
+                  checked={preferences.compact_view || false}
+                  onCheckedChange={(value) => updatePreference('compact_view', value)}
+                  disabled={loading}
                 />
               </div>
             </CardContent>
@@ -310,7 +366,7 @@ const Settings = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Currency</Label>
-                <Select value={currency} onValueChange={setCurrency}>
+                <Select value={preferences.currency || 'USD'} onValueChange={(value) => updatePreference('currency', value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

@@ -6,13 +6,67 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Clock, Play, Pause, Square, Calendar } from "lucide-react";
 import { StatsCard } from "@/components/ui/stats-card";
+import { SearchInput } from "@/components/SearchInput";
 import { useAppStore } from "@/hooks/useAppStore";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const TimeTracking = () => {
   const { isTimerRunning, timerSeconds, currentTask, startTimer, pauseTimer, stopTimer, updateTimer } = useAppStore();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [taskName, setTaskName] = useState("");
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [filteredItems, setFilteredItems] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    fetchTasksAndProjects();
+  }, [user]);
+
+  const fetchTasksAndProjects = async () => {
+    if (!user) return;
+    
+    try {
+      const [tasksResponse, projectsResponse] = await Promise.all([
+        supabase.from('tasks').select('*').eq('user_id', user.id),
+        supabase.from('projects').select('*').eq('user_id', user.id)
+      ]);
+      
+      if (tasksResponse.data) setTasks(tasksResponse.data);
+      if (projectsResponse.data) setProjects(projectsResponse.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleSearch = (query: string) => {
+    if (!query.trim()) {
+      setFilteredItems([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const taskResults = tasks.filter(task => 
+      task.title.toLowerCase().includes(query.toLowerCase())
+    ).map(task => ({ ...task, type: 'task' }));
+    
+    const projectResults = projects.filter(project => 
+      project.name.toLowerCase().includes(query.toLowerCase())
+    ).map(project => ({ ...project, type: 'project' }));
+
+    const combined = [...taskResults, ...projectResults];
+    setFilteredItems(combined);
+    setShowSuggestions(true);
+  };
+
+  const selectItem = (item: any) => {
+    const name = item.type === 'task' ? item.title : item.name;
+    setTaskName(name);
+    setShowSuggestions(false);
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -73,13 +127,28 @@ const TimeTracking = () => {
             <p className="text-muted-foreground">Track your time and improve productivity</p>
           </div>
           {!isTimerRunning ? (
-            <div className="flex gap-2">
-              <Input
-                placeholder="Enter task name..."
-                value={taskName}
-                onChange={(e) => setTaskName(e.target.value)}
-                className="w-64"
-              />
+            <div className="flex gap-2 relative">
+              <div className="relative w-64">
+                <SearchInput
+                  placeholder="Search tasks or projects..."
+                  onSearch={handleSearch}
+                  className="w-full"
+                />
+                {showSuggestions && filteredItems.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-md shadow-lg z-10 mt-1">
+                    {filteredItems.slice(0, 5).map((item) => (
+                      <div
+                        key={`${item.type}-${item.id}`}
+                        className="p-3 hover:bg-accent cursor-pointer border-b last:border-b-0"
+                        onClick={() => selectItem(item)}
+                      >
+                        <div className="font-medium">{item.type === 'task' ? item.title : item.name}</div>
+                        <div className="text-sm text-muted-foreground capitalize">{item.type}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <Button className="bg-primary hover:bg-primary-hover" onClick={handleStartTimer}>
                 <Play className="mr-2 h-4 w-4" />
                 Start Timer

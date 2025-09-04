@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      automation_rules: {
+        Row: {
+          actions: Json | null
+          conditions: Json | null
+          created_at: string
+          description: string | null
+          enabled: boolean | null
+          id: string
+          last_run_at: string | null
+          name: string
+          rule_type: string
+          triggers_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          last_run_at?: string | null
+          name: string
+          rule_type: string
+          triggers_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          rule_type?: string
+          triggers_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -267,6 +312,51 @@ export type Database = {
           name?: string
           role?: string
           status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          date_format: string | null
+          id: string
+          language: string | null
+          notifications_desktop: boolean | null
+          notifications_email: boolean | null
+          notifications_push: boolean | null
+          theme: string | null
+          timezone: string | null
+          two_factor_enabled: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_format?: string | null
+          id?: string
+          language?: string | null
+          notifications_desktop?: boolean | null
+          notifications_email?: boolean | null
+          notifications_push?: boolean | null
+          theme?: string | null
+          timezone?: string | null
+          two_factor_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date_format?: string | null
+          id?: string
+          language?: string | null
+          notifications_desktop?: boolean | null
+          notifications_email?: boolean | null
+          notifications_push?: boolean | null
+          theme?: string | null
+          timezone?: string | null
+          two_factor_enabled?: boolean | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

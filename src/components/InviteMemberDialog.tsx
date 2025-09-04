@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InviteMemberDialogProps {
   children?: React.ReactNode;
@@ -17,9 +18,10 @@ export function InviteMemberDialog({ children, onMemberInvited }: InviteMemberDi
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email.trim() || !name.trim() || !role) {
@@ -31,27 +33,57 @@ export function InviteMemberDialog({ children, onMemberInvited }: InviteMemberDi
       return;
     }
 
-    const newMember = {
-      id: Date.now(),
-      name: name.trim(),
-      email: email.trim(),
-      role: role,
-      status: "pending",
-      invitedAt: new Date()
-    };
+    setLoading(true);
+    try {
+      // Send invitation email via Supabase edge function
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'team_invitation',
+          to: [email.trim()],
+          data: {
+            inviterName: 'Your Team',
+            inviteeEmail: email.trim(),
+            inviteeName: name.trim(),
+            role: role,
+            inviteLink: `${window.location.origin}/auth?invite=true`
+          }
+        }
+      });
 
-    onMemberInvited?.(newMember);
-    
-    toast({
-      title: "Success",
-      description: "Team member invited successfully!"
-    });
+      if (emailError) {
+        throw emailError;
+      }
 
-    // Reset form
-    setEmail("");
-    setName("");
-    setRole("");
-    setOpen(false);
+      const newMember = {
+        id: Date.now(),
+        name: name.trim(),
+        email: email.trim(),
+        role: role,
+        status: "pending",
+        invitedAt: new Date()
+      };
+
+      onMemberInvited?.(newMember);
+      
+      toast({
+        title: "Success",
+        description: `Team invitation sent to ${email.trim()}!`
+      });
+
+      // Reset form
+      setEmail("");
+      setName("");
+      setRole("");
+      setOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send invitation",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -5,48 +5,97 @@ import { Switch } from "@/components/ui/switch";
 import { Zap, Plus, Settings, Play, Pause } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Automations = () => {
   const { toast } = useToast();
-  const [automations, setAutomations] = useState([
-    {
-      id: 1,
-      name: "Auto-assign new tasks",
-      description: "Automatically assign incoming tasks based on team workload",
-      enabled: true,
-      status: "active",
-      triggers: 45,
-      lastRun: "2 minutes ago"
-    },
-    {
-      id: 2,
-      name: "Send deadline reminders",
-      description: "Notify team members 24 hours before task deadlines",
-      enabled: true,
-      status: "active",
-      triggers: 23,
-      lastRun: "1 hour ago"
-    },
-    {
-      id: 3,
-      name: "Archive completed projects",
-      description: "Move completed projects to archive after 30 days",
-      enabled: false,
-      status: "inactive",
-      triggers: 8,
-      lastRun: "Never"
-    },
-    {
-      id: 4,
-      name: "Weekly progress reports",
-      description: "Generate and send weekly progress reports to stakeholders",
-      enabled: true,
-      status: "active",
-      triggers: 12,
-      lastRun: "3 days ago"
+  const { user } = useAuth();
+  const [automations, setAutomations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchAutomations();
+  }, [user]);
+
+  const fetchAutomations = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('automation_rules')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error('Error fetching automations:', error);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        setAutomations(data.map(rule => ({
+          id: rule.id,
+          name: rule.name,
+          description: rule.description,
+          enabled: rule.enabled,
+          status: rule.enabled ? 'active' : 'inactive',
+          triggers: rule.triggers_count || 0,
+          lastRun: rule.last_run_at ? new Date(rule.last_run_at).toLocaleString() : 'Never'
+        })));
+      } else {
+        // Create default automations if none exist
+        const defaultAutomations = [
+          {
+            user_id: user.id,
+            name: "Auto-assign new tasks",
+            description: "Automatically assign incoming tasks based on team workload",
+            enabled: true,
+            rule_type: 'task_assignment',
+            conditions: { workload_threshold: 80 },
+            actions: { assign_to: 'least_busy' }
+          },
+          {
+            user_id: user.id,
+            name: "Send deadline reminders",
+            description: "Notify team members 24 hours before task deadlines",
+            enabled: true,
+            rule_type: 'deadline_reminder',
+            conditions: { hours_before: 24 },
+            actions: { notification_type: 'email' }
+          },
+          {
+            user_id: user.id,
+            name: "Archive completed projects",
+            description: "Move completed projects to archive after 30 days",
+            enabled: false,
+            rule_type: 'project_archival',
+            conditions: { days_after_completion: 30 },
+            actions: { move_to: 'archive' }
+          }
+        ];
+        
+        const { data: newData, error: insertError } = await supabase
+          .from('automation_rules')
+          .insert(defaultAutomations)
+          .select();
+        
+        if (!insertError && newData) {
+          setAutomations(newData.map(rule => ({
+            id: rule.id,
+            name: rule.name,
+            description: rule.description,
+            enabled: rule.enabled,
+            status: rule.enabled ? 'active' : 'inactive',
+            triggers: rule.triggers_count || 0,
+            lastRun: rule.last_run_at ? new Date(rule.last_run_at).toLocaleString() : 'Never'
+          })));
+        }
+      }
+    } catch (error) {
+      console.error('Error with automations:', error);
     }
-  ]);
+  };
 
   const handleNewAutomation = () => {
     toast({
@@ -62,15 +111,45 @@ const Automations = () => {
     });
   };
 
-  const toggleAutomation = (id: number) => {
-    setAutomations(prev => prev.map(auto => 
-      auto.id === id ? { ...auto, enabled: !auto.enabled } : auto
-    ));
-    const automation = automations.find(a => a.id === id);
-    toast({
-      title: automation?.enabled ? "Automation Disabled" : "Automation Enabled",
-      description: `${automation?.name} has been ${automation?.enabled ? 'disabled' : 'enabled'}`
-    });
+  const toggleAutomation = async (id: string) => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const automation = automations.find(a => a.id === id);
+      if (!automation) return;
+      
+      const newEnabled = !automation.enabled;
+      
+      const { error } = await supabase
+        .from('automation_rules')
+        .update({ enabled: newEnabled })
+        .eq('id', id)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      setAutomations(prev => prev.map(auto => 
+        auto.id === id ? { 
+          ...auto, 
+          enabled: newEnabled, 
+          status: newEnabled ? 'active' : 'inactive' 
+        } : auto
+      ));
+      
+      toast({
+        title: newEnabled ? "Automation Enabled" : "Automation Disabled",
+        description: `${automation.name} has been ${newEnabled ? 'enabled' : 'disabled'}`
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update automation",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -94,7 +173,7 @@ const Automations = () => {
                 <Zap className="h-5 w-5 text-primary" />
                 <span className="text-sm font-medium text-muted-foreground">Active</span>
               </div>
-              <div className="text-2xl font-bold text-foreground">3</div>
+              <div className="text-2xl font-bold text-foreground">{automations.filter(a => a.enabled).length}</div>
               <p className="text-xs text-muted-foreground">Running automations</p>
             </CardContent>
           </Card>
@@ -105,7 +184,7 @@ const Automations = () => {
                 <Play className="h-5 w-5 text-green-500" />
                 <span className="text-sm font-medium text-muted-foreground">Triggers</span>
               </div>
-              <div className="text-2xl font-bold text-foreground">88</div>
+              <div className="text-2xl font-bold text-foreground">{automations.reduce((acc, a) => acc + a.triggers, 0)}</div>
               <p className="text-xs text-muted-foreground">This month</p>
             </CardContent>
           </Card>
@@ -133,7 +212,11 @@ const Automations = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <StatusBadge status={automation.status as "todo" | "in-progress" | "completed" | "review"} />
-                    <Switch checked={automation.enabled} />
+                    <Switch 
+                      checked={automation.enabled} 
+                      onCheckedChange={() => toggleAutomation(automation.id)}
+                      disabled={loading}
+                    />
                   </div>
                 </div>
               </CardHeader>
@@ -148,7 +231,7 @@ const Automations = () => {
                     <span className="ml-2 font-medium">{automation.lastRun}</span>
                   </div>
                   <div className="flex justify-end">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleConfigure(automation.name)}>
                       <Settings className="mr-2 h-4 w-4" />
                       Configure
                     </Button>
