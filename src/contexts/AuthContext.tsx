@@ -129,9 +129,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: error.message,
         variant: "destructive"
       });
-    } else {
-      // Refresh the page after successful OAuth to handle the redirect properly
-      window.location.reload();
     }
 
     return { error };

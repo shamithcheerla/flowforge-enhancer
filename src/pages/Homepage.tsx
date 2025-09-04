@@ -16,7 +16,7 @@ const Homepage = () => {
   }, []);
 
   const handleGetStarted = () => {
-    navigate("/");
+    navigate("/auth");
   };
 
   const navItems = [
