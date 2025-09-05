@@ -115,23 +115,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-        skipBrowserRedirect: false
-      }
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      });
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Google Sign In Error", 
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error: any) {
       toast({
         title: "Google Sign In Error", 
         description: error.message,
         variant: "destructive"
       });
+      return { error };
     }
-
-    return { error };
   };
 
   const resetPassword = async (email: string) => {
@@ -156,11 +169,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        // Clear states immediately
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        toast({
+          title: "Success",
+          description: "You have been logged out successfully.",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to logout",
         variant: "destructive"
       });
     }

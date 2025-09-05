@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Github, Twitter, Linkedin, Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import Spline from '@splinetool/react-spline';
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -27,23 +28,27 @@ const Homepage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse delay-500"></div>
-        
-        {/* Floating Shapes */}
-        <div className="absolute top-20 left-20 w-4 h-4 bg-primary/20 rounded-full animate-bounce delay-300"></div>
-        <div className="absolute top-40 right-32 w-6 h-6 bg-primary/30 rounded-full animate-bounce delay-700"></div>
-        <div className="absolute bottom-32 left-1/4 w-3 h-3 bg-primary/25 rounded-full animate-bounce delay-1000"></div>
-        <div className="absolute bottom-20 right-20 w-5 h-5 bg-primary/20 rounded-full animate-bounce delay-500"></div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* 3D Spline Background */}
+      <div className="absolute inset-0 z-0">
+        <Suspense fallback={
+          <div className="w-full h-full bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          </div>
+        }>
+          <Spline 
+            scene="https://prod.spline.design/JAmAHkGVTlu2ylarApoko3XX/scene.splinecode"
+            style={{ width: '100%', height: '100%' }}
+          />
+        </Suspense>
       </div>
+      
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-background/20 z-10"></div>
 
       {/* Fixed Navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrollY > 50 ? 'bg-background/80 backdrop-blur-md border-b border-border/50' : 'bg-transparent'
+        scrollY > 50 ? 'bg-background/90 backdrop-blur-md border-b border-border/50' : 'bg-background/60 backdrop-blur-sm'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -103,7 +108,7 @@ const Homepage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16">
+      <section id="home" className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-16 relative z-20">
         <div className="max-w-4xl mx-auto text-center">
           <div className="space-y-8">
             {/* Main Heading */}
@@ -168,7 +173,7 @@ const Homepage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-surface/50 backdrop-blur-sm border-t border-border/50 py-12">
+      <footer className="bg-surface/50 backdrop-blur-sm border-t border-border/50 py-12 relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             {/* Copyright */}

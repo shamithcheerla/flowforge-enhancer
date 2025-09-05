@@ -24,7 +24,7 @@ const Index = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     }
   }, [user, navigate]);
 
@@ -44,7 +44,13 @@ const Index = () => {
     setLoading(false);
     
     if (!error) {
-      navigate("/dashboard");
+      toast({
+        title: "Success!",
+        description: "Welcome back! Redirecting to dashboard...",
+      });
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 500);
     }
   };
 
@@ -81,15 +87,25 @@ const Index = () => {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    const { error } = await signInWithGoogle();
-    setLoading(false);
     
-    if (error) {
+    try {
+      const { error } = await signInWithGoogle();
+      
+      if (!error) {
+        toast({
+          title: "Redirecting...",
+          description: "Please wait while we redirect you to Google",
+        });
+        // The redirect will happen automatically via OAuth flow
+      }
+    } catch (error: any) {
       toast({
         title: "Google Sign In Error",
-        description: error.message,
+        description: error.message || "Failed to sign in with Google",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
 

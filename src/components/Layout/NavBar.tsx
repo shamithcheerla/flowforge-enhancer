@@ -23,15 +23,19 @@ export function NavBar({ onToggleSidebar }: NavBarProps) {
     try {
       await signOut();
       // Clear all stored data
-      localStorage.removeItem('nexaflow_app_state');
-      localStorage.removeItem('theme');
-      localStorage.removeItem('colorScheme'); 
-      localStorage.removeItem('nexaflow_language');
+      localStorage.clear();
+      sessionStorage.clear();
       
-      // Redirect to login page
-      window.location.href = '/';
+      // Force redirect to homepage after logout
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     } catch (error) {
       console.error('Logout error:', error);
+      // Force redirect even if logout fails
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     }
   };
 
