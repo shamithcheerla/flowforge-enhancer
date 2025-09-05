@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Github, Twitter, Linkedin, Menu, X } from "lucide-react";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import Spline from '@splinetool/react-spline';
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -29,26 +28,46 @@ const Homepage = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* 3D Spline Background */}
+      {/* Interactive 3D-like Background */}
       <div className="absolute inset-0 z-0">
-        <Suspense fallback={
-          <div className="w-full h-full bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="w-full h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-slate-950 dark:via-purple-950 dark:to-slate-950">
+          {/* Animated geometric shapes */}
+          <div className="absolute inset-0">
+            {/* Large floating orbs */}
+            <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-40 right-32 w-48 h-48 bg-gradient-to-r from-cyan-500/25 to-blue-500/25 rounded-full blur-2xl animate-bounce" style={{animationDuration: '6s'}}></div>
+            <div className="absolute bottom-32 left-1/4 w-80 h-80 bg-gradient-to-r from-purple-500/15 to-pink-500/15 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+            <div className="absolute bottom-20 right-20 w-56 h-56 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-full blur-2xl animate-bounce" style={{animationDuration: '8s', animationDelay: '1s'}}></div>
+            
+            {/* Floating particles */}
+            <div className="absolute top-1/4 left-1/3 w-2 h-2 bg-cyan-400/60 rounded-full animate-ping" style={{animationDelay: '0s'}}></div>
+            <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-blue-400/40 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
+            <div className="absolute bottom-1/3 left-1/2 w-1 h-1 bg-purple-400/80 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
+            <div className="absolute bottom-1/4 right-1/3 w-2 h-2 bg-indigo-400/50 rounded-full animate-ping" style={{animationDelay: '3s'}}></div>
+            
+            {/* Grid overlay */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="w-full h-full" style={{
+                backgroundImage: `
+                  linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px)
+                `,
+                backgroundSize: '50px 50px'
+              }}></div>
+            </div>
+            
+            {/* Central glow */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-cyan-500/10 via-blue-500/20 to-purple-500/10 rounded-full blur-3xl animate-pulse" style={{animationDuration: '4s'}}></div>
           </div>
-        }>
-          <Spline 
-            scene="https://prod.spline.design/JAmAHkGVTlu2ylarApoko3XX/scene.splinecode"
-            style={{ width: '100%', height: '100%' }}
-          />
-        </Suspense>
+        </div>
       </div>
       
       {/* Overlay for better text readability */}
-      <div className="absolute inset-0 bg-background/20 z-10"></div>
+      <div className="absolute inset-0 bg-background/30 dark:bg-background/50 z-10"></div>
 
       {/* Fixed Navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrollY > 50 ? 'bg-background/90 backdrop-blur-md border-b border-border/50' : 'bg-background/60 backdrop-blur-sm'
+        scrollY > 50 ? 'bg-background/95 backdrop-blur-md border-b border-border/50' : 'bg-background/70 backdrop-blur-sm'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -113,13 +132,13 @@ const Homepage = () => {
           <div className="space-y-8">
             {/* Main Heading */}
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white leading-tight drop-shadow-2xl">
                 Welcome to{" "}
-                <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                   Flow Forge
                 </span>
               </h1>
-              <p className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              <p className="text-xl sm:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
                 Smart Task Management with Beautiful 3D Experiences
               </p>
             </div>
@@ -127,8 +146,8 @@ const Homepage = () => {
             {/* CTA Button */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
               <Button
-                size="lg"
-                className="bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-4 text-lg font-semibold shadow-primary hover:shadow-glow transition-all duration-300 transform hover:scale-105 group"
+                size="lg" 
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold shadow-2xl hover:shadow-cyan-500/25 transition-all duration-300 transform hover:scale-105 group border-0"
                 onClick={handleGetStarted}
               >
                 Get Started
@@ -137,7 +156,7 @@ const Homepage = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="px-8 py-4 text-lg font-semibold border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
+                className="px-8 py-4 text-lg font-semibold border-white/30 text-white hover:border-white/50 hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
                 onClick={() => navigate("/dashboard")}
               >
                 View Demo
