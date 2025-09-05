@@ -8,6 +8,9 @@ import { NotificationProvider } from "@/components/NotificationSystem";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Homepage from "./pages/Homepage";
+import Features from "./pages/Features";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Projects from "./pages/Projects";
@@ -37,6 +40,9 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Homepage />} />
               <Route path="/auth" element={<Index />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
               <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
