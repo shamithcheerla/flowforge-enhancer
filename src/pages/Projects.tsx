@@ -190,9 +190,9 @@ const Projects = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="flex gap-6 overflow-x-auto pb-4">
                 {filteredProjects.map((project) => (
-                  <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
+                  <Card key={project.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all min-w-[320px] flex-shrink-0">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="space-y-1">

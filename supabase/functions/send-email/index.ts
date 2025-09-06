@@ -121,7 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: "NexaFlow <onboarding@resend.dev>",
-      to: [to],
+      to: Array.isArray(to) ? to : [to],
       subject: subject,
       html: html,
     });

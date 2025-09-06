@@ -42,11 +42,11 @@ export const ForgotPasswordDialog = ({ open, onOpenChange }: ForgotPasswordDialo
       // Send email with 2FA code
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
-          type: 'two_factor_code',
-          to: [email],
+          type: '2fa_code',
+          to: email,
+          subject: 'Password Reset Code',
           data: {
-            code: verificationCode,
-            expiresIn: '10 minutes'
+            code: verificationCode
           }
         }
       });

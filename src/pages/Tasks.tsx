@@ -133,7 +133,7 @@ const Tasks = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-6">
             {columns.map((column) => (
               <div key={column.id} className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -145,9 +145,9 @@ const Tasks = () => {
                   </h3>
                 </div>
 
-                <div className="space-y-3">
+                <div className="flex gap-4 overflow-x-auto pb-4">
                   {column.tasks.map((task) => (
-                    <Card key={task.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
+                    <Card key={task.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all min-w-[280px] flex-shrink-0">
                       <CardContent className="p-4">
                         <div className="space-y-3">
                           <div className="flex items-start justify-between">
