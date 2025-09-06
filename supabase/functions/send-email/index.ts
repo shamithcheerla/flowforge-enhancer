@@ -128,6 +128,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
+    // Check for Resend errors and provide helpful feedback
+    if (emailResponse.error) {
+      console.error("Resend error:", emailResponse.error);
+      
+      // Handle the common domain verification error
+      if (emailResponse.error.message && emailResponse.error.message.includes('verify a domain')) {
+        throw new Error("Email sending requires domain verification. Please verify your domain at resend.com/domains or contact support.");
+      }
+      
+      throw new Error(emailResponse.error.message || "Failed to send email");
+    }
+
     return new Response(JSON.stringify({ success: true, data: emailResponse }), {
       status: 200,
       headers: {

@@ -39,13 +39,12 @@ export function InviteMemberDialog({ children, onMemberInvited }: InviteMemberDi
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
           type: 'team_invitation',
-          to: [email.trim()],
+          to: email.trim(),
+          subject: `You're invited to join our team as ${role}`,
           data: {
+            name: name.trim(),
             inviterName: 'Your Team',
-            inviteeEmail: email.trim(),
-            inviteeName: name.trim(),
-            role: role,
-            inviteLink: `${window.location.origin}/auth?invite=true`
+            role: role
           }
         }
       });
