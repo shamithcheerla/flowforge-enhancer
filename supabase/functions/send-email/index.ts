@@ -140,7 +140,11 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(emailResponse.error.message || "Failed to send email");
     }
 
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      data: emailResponse,
+      message: "Email sent successfully" 
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -149,10 +153,22 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("Error in send-email function:", error);
+    
+    // Handle specific Resend errors
+    let errorMessage = error.message;
+    if (error.message && error.message.includes('verify a domain')) {
+      errorMessage = "Email domain needs verification. Please use your registered email or verify domain at resend.com/domains";
+    } else if (error.message && error.message.includes('testing emails')) {
+      errorMessage = "Can only send to verified email addresses. Please verify your domain at resend.com/domains";
+    }
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: errorMessage,
+        success: false 
+      }),
       {
-        status: 500,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );

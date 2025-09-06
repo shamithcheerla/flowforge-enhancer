@@ -145,9 +145,9 @@ const Tasks = () => {
                   </h3>
                 </div>
 
-                <div className="flex gap-4 overflow-x-auto pb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {column.tasks.map((task) => (
-                    <Card key={task.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all min-w-[280px] flex-shrink-0">
+                    <Card key={task.id} className="bg-surface border-card-border shadow-card hover:shadow-glow transition-all">
                       <CardContent className="p-4">
                         <div className="space-y-3">
                           <div className="flex items-start justify-between">

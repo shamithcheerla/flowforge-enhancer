@@ -36,7 +36,7 @@ export function InviteMemberDialog({ children, onMemberInvited }: InviteMemberDi
     setLoading(true);
     try {
       // Send invitation email via Supabase edge function
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
+      const { data, error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
           type: 'team_invitation',
           to: email.trim(),
@@ -49,8 +49,8 @@ export function InviteMemberDialog({ children, onMemberInvited }: InviteMemberDi
         }
       });
 
-      if (emailError) {
-        throw emailError;
+      if (emailError || (data && !data.success)) {
+        throw new Error(data?.error || emailError?.message || 'Failed to send invitation');
       }
 
       const newMember = {

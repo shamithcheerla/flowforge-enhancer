@@ -40,18 +40,20 @@ export const ForgotPasswordDialog = ({ open, onOpenChange }: ForgotPasswordDialo
 
     try {
       // Send email with 2FA code
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
+      const { data, error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
           type: '2fa_code',
           to: email,
-          subject: 'Password Reset Code',
+          subject: 'Password Reset Code - NexaFlow',
           data: {
             code: verificationCode
           }
         }
       });
 
-      if (emailError) throw emailError;
+      if (emailError || (data && !data.success)) {
+        throw new Error(data?.error || emailError?.message || 'Failed to send verification code');
+      }
 
       // Store the code temporarily in localStorage for verification
       localStorage.setItem('forgot_password_code', verificationCode);
